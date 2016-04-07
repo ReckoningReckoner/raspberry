@@ -1,0 +1,18 @@
+
+<form method=post action="">
+     <!-- Display errors --> 
+     {% with error = get_flashed_messages() %}
+         {% if error %}
+             {% for e in error %}
+             <p class=error><font color ="red"> {{e}}</font> </p>
+             {% endfor %}
+         {% endif %}
+     {% endwith %}
+
+     {% for f in form %}
+         <p> {{f.label}}</p>
+         <p> {{f}}</p>
+     {% endfor %}
+     
+     <p><input type=submit value=add> 
+</form>

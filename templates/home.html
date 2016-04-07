@@ -1,0 +1,28 @@
+<table>
+    <tr>
+        <td> Pin </td>
+        <td> Name </td>
+        <td> Type </td>
+    <td> Current State </td>
+    </tr>
+
+    {% for remote in remotes %}
+    <tr>
+        <td> {{remote["pin"]}}</td>
+        <td> {{remote["name"]}} </td>
+        <td> {{remote["type"]}} </td>
+        <td> {{remote["keep_on"]}} </td>
+        <td> 
+            <form method=post action="">
+                <input type=submit id="pin" value={{remote["pin"]}} name=toggle>
+            </form> 
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+<a href="/new">
+    Add a new LED
+</a>
+
