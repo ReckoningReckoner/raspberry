@@ -72,14 +72,14 @@ class Remote():
         self.remotes[pin].set(self.db.get(q["pin"] == pin))
 
     def delete(self, pin):
-        self.pause = False
+        self.pause = True
         if type(pin) is not int:
             pin = int(pin)
 
         self.remotes.pop(pin)
         q = Query()
         self.db.remove(q["pin"] == pin)
-        self.pause = True
+        self.pause = False
 
 # Abstract remote class
 
