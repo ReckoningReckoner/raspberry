@@ -42,8 +42,13 @@ def index():
     if request.method == "GET":
         return render_template('home.html', remotes=r.to_dict())
     elif request.method == "POST":
-        pin = request.form["toggle"]
-        r.toggle(int(pin))
+        if "toggle" in request.form:
+            pin = request.form["toggle"]
+            r.toggle(int(pin))
+        elif "delete" in request.form:
+            pin = request.form["delete"]
+            r.delete(int(pin))
+
         return render_template('home.html', remotes=r.to_dict())
     else:
         raise RuntimeError("invalid request method")

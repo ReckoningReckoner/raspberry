@@ -66,6 +66,13 @@ class Remote():
         self.db.update({"keep_on": new_bool}, q["pin"] == pin)
         self.remotes[pin].set(self.db.get(q["pin"] == pin))
 
+    def delete(self, pin):
+        if type(pin) is not int:
+            pin = int(pin)
+
+        self.remotes.pop(pin)
+        q = Query()
+        self.db.remove(q["pin"] == pin)
 
 # Abstract remote class
 
