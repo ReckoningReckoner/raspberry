@@ -1,28 +1,27 @@
-<table>
-    <tr>
-        <td> Pin </td>
-        <td> Name </td>
-        <td> Type </td>
-    <td> Current State </td>
-    </tr>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Home automation </title>
+    </head>
 
-    {% for remote in remotes %}
-    <tr>
-        <td> {{remote["pin"]}}</td>
-        <td> {{remote["name"]}} </td>
-        <td> {{remote["type"]}} </td>
-        <td> {{remote["keep_on"]}} </td>
-        <td> 
-            <form method=post action="">
-                <input type=submit id="pin" value={{remote["pin"]}} name=toggle>
-            </form> 
-        </td>
-    </tr>
-    {% endfor %}
+    <body>
+        <p> Pin Name Type Current State Delete </p>
 
-</table>
+        {% for remote in remotes %}
+        <p>
+        {{remote["pin"]}} {{remote["name"]}} 
+        {{remote["type"]}} {{remote["keep_on"]}} 
+        </p>
 
-<a href="/new">
-    Add a new LED
-</a>
+        <form method=post action="/">
+            <input type=submit value={{remote['pin']}} name=toggle> 
+            <input type=submit value={{remote['pin']}} name=delete> 
+        </form> 
+        {% endfor %}
+
+        <a href="/new">
+            Add a new LED
+        </a>
+    </body>
+</html>
 
