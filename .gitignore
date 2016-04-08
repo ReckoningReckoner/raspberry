@@ -1,9 +1,5 @@
-ass
-*.dll
-*.exe
-*.o
-*.so
 *.pyc
+*.swp
 
 # Packages #
 ############
