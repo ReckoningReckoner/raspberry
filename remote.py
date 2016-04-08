@@ -20,7 +20,7 @@ class Remote():
         print("running remoteLED")
         while True:
             for k in self.remotes:
-                self.remote[k].run()
+                self.remotes[k].run()
 
     # checks if it's a duplicate
     def check_for_duplicate_pin(self, d):
