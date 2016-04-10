@@ -1,5 +1,5 @@
 from tinydb import TinyDB, Query
-
+from gpiozero import LED
 
 # Class for holding all the remotes
 
@@ -102,15 +102,17 @@ class RemoteAbstract():
 class RemoteLED(RemoteAbstract):
     def __init__(self, dic):
         super().__init__(dic)
-        self.led = "LEDOBJECT"
-
         getattr(self, "keep_on")
+        try:
+            self.led = LED(self.pin)
+        except Exception as e:
+            raise e
 
     def run(self):
         if self.keep_on:
-            pass
+            self.led.on()
         else:
-            pass
+            self.led.off()
 
     def toggle(self):
         if self.keep_on:
