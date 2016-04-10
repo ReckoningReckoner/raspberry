@@ -1,5 +1,6 @@
 from tinydb import TinyDB, Query
 from gpiozero import LED
+from time import sleep, time
 
 # Class for holding all the remotes
 
@@ -17,12 +18,30 @@ class Remote():
     # runs in parallel with the flask server, for physically
     # displaying the lights (or lack of)
     def run(self):
-        print("running remoteLED")
+        print("running remotes")
+        q = Query()
         while True:
             try:
+                sleep(1)
+                current_time = int(time())
+                debug = current_time % 5 == 0
+
                 for k in self.remotes.keys():
                     if k in self.remotes:
+                        result = self.db.get(q["pin"] == k)
+                        if (result != self.remotes[k].__dict__):
+                            self.remotes[k].set(result)
+
                         self.remotes[k].run()
+
+                        if debug:
+                            print(self.remotes[k].name,
+                                  "db", result["keep_on"], 
+                                  "pi", self.remotes[k].keep_on)
+
+                if debug:
+                    print("Checked at:", current_time, "\n")
+
             except RuntimeError as e:
                 print(e)
                 print("Continuing anyway")
@@ -71,7 +90,6 @@ class Remote():
             new_bool = True
 
         self.db.update({"keep_on": new_bool}, q["pin"] == pin)
-        self.remotes[pin].set(self.db.get(q["pin"] == pin))
 
     def delete(self, pin):
         if type(pin) is not int:
@@ -105,6 +123,11 @@ class RemoteLED(RemoteAbstract):
         getattr(self, "keep_on")
         try:
             self.led = LED(self.pin)
+            if self.keep_on:
+                self.led.on()
+            else:
+                self.led.off()
+                
         except Exception as e:
             raise e
 
@@ -114,20 +137,8 @@ class RemoteLED(RemoteAbstract):
         else:
             self.led.off()
 
-    def toggle(self):
-        if self.keep_on:
-            self.keep_on = False
-        else:
-            self.keep_on = True
-
-
 if __name__ == "__main__":
     data = {'name': 'red', 'pin': 16, 'type': 'LED', 'keep_on': True}
-    data2 = {'name': 'red', 'pin': 16, 'type': 'LED', 'keep_on': False}
 
     r = RemoteLED(data)
-    print(r.__dict__)
-    r.set(data2)
-    print(r.__dict__)
-    r.toggle()
     print(r.__dict__)

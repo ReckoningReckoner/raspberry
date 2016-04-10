@@ -1,1 +1,1 @@
-{"_default": {"16": {"pin": 16, "name": "Pants", "type": "LED", "keep_on": true}, "15": {"pin": 123, "name": "sdfsd", "type": "LED", "keep_on": true}}}
+{"_default": {"1": {"pin": 12, "keep_on": false, "name": "blue", "type": "LED"}, "2": {"pin": 13, "keep_on": true, "name": "yellow", "type": "LED"}}}
