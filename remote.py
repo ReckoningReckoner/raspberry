@@ -14,18 +14,19 @@ class Remote():
         for remote in self.to_dict():
             self.remotes[remote['pin']] = RemoteLED(remote)
 
-        self.pause = False
-
     # runs in parallel with the flask server, for physically
     # displaying the lights (or lack of)
     def run(self):
         print("running remoteLED")
         while True:
-            if self.pause:
+            try:
+                for k in self.remotes.keys():
+                    if k in self.remotes:
+                        self.remotes[k].run()
+            except RuntimeError as e:
+                print(e)
+                print("Continuing anyway")
                 continue
-            else:
-                for k in self.remotes:
-                    self.remotes[k].run()
 
     # checks if it's a duplicate
     def check_for_duplicate_pin(self, d):
@@ -50,6 +51,7 @@ class Remote():
                 self.new_RemoteLED(d)
             else:
                 raise TypeError("Invalid remote type")
+            print("# of remotes is:", len(self.remotes))
         except Exception as e:
             raise e
 
@@ -72,14 +74,15 @@ class Remote():
         self.remotes[pin].set(self.db.get(q["pin"] == pin))
 
     def delete(self, pin):
-        self.pause = True
         if type(pin) is not int:
             pin = int(pin)
+
+        if pin not in self.remotes:
+            return
 
         self.remotes.pop(pin)
         q = Query()
         self.db.remove(q["pin"] == pin)
-        self.pause = False
 
 # Abstract remote class
 
