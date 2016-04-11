@@ -1,10 +1,17 @@
+# These are the remotes themselves. They are hardware devices that are
+# controlled by the pi. They use wtforms to create attributes about them,
+# such as which pin they are connected to the pi from
+
+
 import wtforms
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 
-DEBUG = True
+DEBUG = False
 if not DEBUG:  # if not editing from the raspberry pi
     from gpiozero import LED
+else:
+    print("DEBUG MODE IS ON, HARDWARE WILL NOT WORK")
 
 MIN_GPIO = 4
 MAX_GPIO = 26

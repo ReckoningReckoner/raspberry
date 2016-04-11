@@ -1,3 +1,11 @@
+# This class communicates between remotes (the hardware) and the
+# database. It also gets input from the web server.
+# The database is essentially a JSON file that has certain attributes.
+# Those attributes can be used as an input for an ouput device, e.g.
+# if a certain boolean is true, power the output device. Otherwise, 
+# turn it off.
+
+
 from tinydb import TinyDB, Query
 from time import sleep, time
 from remote_object import RemoteSimpleOutput

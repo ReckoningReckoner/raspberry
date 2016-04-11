@@ -1,1 +1,1 @@
-{"_default": {"1": {"keep_on": true, "type": "Simple Output", "name": "blue LED", "pin": 21}}}
+{"_default": {"1": {"name": "Buzzer", "pin": 18, "type": "Simple Output", "keep_on": false}, "2": {"name": "LED", "pin": 20, "type": "Simple Output", "keep_on": false}}}

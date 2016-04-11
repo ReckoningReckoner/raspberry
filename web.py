@@ -1,3 +1,6 @@
+# This module is the web server, and communictates to the remote.py module
+
+
 from flask import Flask, request, flash, redirect, url_for, render_template
 from threading import Thread
 from remote import Remote
