@@ -1,6 +1,6 @@
 from tinydb import TinyDB, Query
 from time import sleep, time
-from remote_object import RemoteLED
+from remote_object import RemoteSimpleOutput
 
 
 # Class for holding all the remotes
@@ -24,7 +24,7 @@ class Remote():
 
         while True:
             try:
-                sleep(1) # Prevents the system from going too fast
+                sleep(1)  # Prevents the system from going too fast
                 to_debug = self.show_debug_output()
                 self.run_the_remotes(to_debug)
 
@@ -46,7 +46,7 @@ class Remote():
 
     # Runs all the remotes
     def run_the_remotes(self, debug=True):
-        for remote in self.to_dict(): # use the database to find things
+        for remote in self.to_dict():  # use the database to find things
             pin = remote['pin']
             if pin in self.remotes:
                 self.remotes[pin].input(remote)
@@ -57,7 +57,7 @@ class Remote():
 
     # checks if it's a duplicate
     def check_for_duplicate_pin(self, d={}, pin=None):
-        if pin == None:
+        if pin is None:
             result = self.db.get(self.query["pin"] == d["pin"])
         else:
             result = self.db.get(self.query["pin"] == pin)
@@ -69,24 +69,25 @@ class Remote():
                              " this pin")
 
     # adds to database
-    def new_RemoteLED(self, remote):
+    def new_RemoteSimpleOutput(self, remote):
         try:
             import copy
-            r = RemoteLED(copy.deepcopy(remote))
+            r = RemoteSimpleOutput(copy.deepcopy(remote))
             self.remotes[remote['pin']] = r
         except Exception as e:
             raise e
 
     # adds to remote dictionary only. Should onyl be used during init
     def add_locally(self, remote):
-        if remote["type"] == "LED":
-            self.new_RemoteLED(remote)
+        if remote["type"] == "Simple Output":
+            self.new_RemoteSimpleOutput(remote)
         else:
             raise TypeError("Invalid remote type")
 
     # adds to the dictionary and database
     def add(self, remote):
         try:
+            print(remote)
             self.check_for_duplicate_pin(d=remote)
             self.add_locally(remote)
             self.db.insert(remote)
@@ -97,7 +98,7 @@ class Remote():
     def to_dict(self):
         return self.db.all()
 
-    #toggles a certain key
+    # toggles a certain key
     def toggle(self, pin, key="keep_on"):
         if type(pin) is not int:
             pin = int(pin)
