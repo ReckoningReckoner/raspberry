@@ -1,1 +1,1 @@
-{"_default": {"1": {"pin": 12, "keep_on": false, "name": "blue", "type": "LED"}, "2": {"pin": 13, "keep_on": true, "name": "yellow", "type": "LED"}}}
+{"_default": {"5": {"keep_on": true, "pin": 21, "type": "LED", "name": "Blue LED"}, "6": {"keep_on": true, "pin": 20, "type": "LED", "name": "White LED"}}}
