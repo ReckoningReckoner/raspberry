@@ -9,7 +9,7 @@ from wtforms import validators
 
 DEBUG = False
 if not DEBUG:  # if not editing from the raspberry pi
-    from gpiozero import LED
+    from gpiozero import OutputDevice 
 else:
     print("DEBUG MODE IS ON, HARDWARE WILL NOT WORK")
 
@@ -40,9 +40,11 @@ class RemoteAbstract():
     # Gets information from database
     def input(self, data):
         pass
-
     # Modifies database
     def output(self, database, query):
+        pass
+
+    def close(self):
         pass
 
     class Form(wtforms.Form):
@@ -79,7 +81,7 @@ class RemoteSimpleOutput(RemoteAbstract):
             pass
         else:
             try:
-                self.led = LED(dic["pin"])
+                self.device = OutputDevice(dic["pin"])
             except Exception as e:
                 raise e
 
@@ -88,9 +90,12 @@ class RemoteSimpleOutput(RemoteAbstract):
             pass
         else:
             if data["keep_on"]:
-                self.led.on()
+                self.device.on()
             else:
-                self.led.off()
+                self.device.off()
+
+    def close(self):
+        self.device.close()
 
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")
