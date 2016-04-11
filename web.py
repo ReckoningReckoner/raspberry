@@ -1,7 +1,7 @@
 from flask import Flask, request, flash, redirect, url_for, render_template
 from threading import Thread
 from remote import Remote
-from textFill import NewLED
+from remote_object import RemoteSimpleOutput
 import traceback
 
 app = Flask(__name__)
@@ -10,7 +10,7 @@ app.secret_key = "I love Gloria"
 
 @app.route("/new", methods=['GET', 'POST'])
 def new_Remote():
-    form = NewLED(request.form)
+    form = RemoteSimpleOutput.Form(request.form)
 
     if request.method == "POST":
 
