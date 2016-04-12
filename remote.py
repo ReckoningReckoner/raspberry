@@ -21,7 +21,7 @@ class Remote():
 
         self.remotes = {}
         for remote in self.to_dict():
-            self.add_locally(remote)
+            self._add_locally(remote)
 
         print("created remotes")
 
@@ -33,8 +33,8 @@ class Remote():
         while True:
             try:
                 sleep(1)  # Prevents the system from going too fast
-                to_debug = self.show_debug_output()
-                self.run_the_remotes(to_debug)
+                to_debug = self._show_debug_output()
+                self._run_the_remotes(to_debug)
 
             except RuntimeError as e:
                 print(e)
@@ -42,7 +42,7 @@ class Remote():
                 continue
 
     # Debug output
-    def show_debug_output(self):
+    def _show_debug_output(self):
         current_time = int(time())
         debug = current_time % 5 == 0
         if debug:
@@ -53,7 +53,7 @@ class Remote():
         return debug
 
     # Runs all the remotes
-    def run_the_remotes(self, debug=True):
+    def _run_the_remotes(self, debug=True):
         for remote in self.to_dict():  # use the database to find things
             pin = remote['pin']
             if pin in self.remotes:
@@ -64,7 +64,7 @@ class Remote():
                     print("db", remote)
 
     # checks if it's a duplicate
-    def check_for_duplicate_pin(self, d={}, pin=None):
+    def _check_for_duplicate_pin(self, d={}, pin=None):
         if pin is None:
             result = self.db.get(self.query["pin"] == d["pin"])
         else:
@@ -77,7 +77,7 @@ class Remote():
                              " this pin")
 
     # adds to database
-    def new_RemoteSimpleOutput(self, remote):
+    def _new_RemoteSimpleOutput(self, remote):
         try:
             import copy
             r = RemoteSimpleOutput(copy.deepcopy(remote))
@@ -86,9 +86,9 @@ class Remote():
             raise e
 
     # adds to remote dictionary only. Should onyl be used during init
-    def add_locally(self, remote):
+    def _add_locally(self, remote):
         if remote["type"] == "Simple Output":
-            self.new_RemoteSimpleOutput(remote)
+            self._new_RemoteSimpleOutput(remote)
         else:
             raise TypeError("Invalid remote type")
 
@@ -96,8 +96,8 @@ class Remote():
     def add(self, remote):
         try:
             print(remote)
-            self.check_for_duplicate_pin(d=remote)
-            self.add_locally(remote)
+            self._check_for_duplicate_pin(d=remote)
+            self._add_locally(remote)
             self.db.insert(remote)
             print("# of remotes is:", len(self.remotes))
         except Exception as e:
@@ -127,6 +127,7 @@ class Remote():
         if pin not in self.remotes:
             return
 
+        self.remotes[pin].close() # Safely remove device
         self.remotes.pop(pin)
         self.db.remove(self.query["pin"] == pin)
 
