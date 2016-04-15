@@ -2,7 +2,7 @@
 # database. It also gets input from the web server.
 # The database is essentially a JSON file that has certain attributes.
 # Those attributes can be used as an input for an ouput device, e.g.
-# if a certain boolean is true, power the output device. Otherwise, 
+# if a certain boolean is true, power the output device. Otherwise,
 # turn it off.
 
 
@@ -127,7 +127,7 @@ class Remote():
         if pin not in self.remotes:
             return
 
-        self.remotes[pin].close() # Safely remove device
+        self.remotes[pin].close()  # Safely remove device
         self.remotes.pop(pin)
         self.db.remove(self.query["pin"] == pin)
 

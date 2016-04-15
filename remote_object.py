@@ -7,9 +7,9 @@ import wtforms
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 
-DEBUG = False
+DEBUG = True
 if not DEBUG:  # if not editing from the raspberry pi
-    from gpiozero import OutputDevice 
+    from gpiozero import OutputDevice
 else:
     print("DEBUG MODE IS ON, HARDWARE WILL NOT WORK")
 
