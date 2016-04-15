@@ -7,7 +7,7 @@ import wtforms
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 
-DEBUG = True
+DEBUG = False
 if not DEBUG:  # if not editing from the raspberry pi
     from gpiozero import OutputDevice
 else:
