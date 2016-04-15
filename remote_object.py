@@ -34,12 +34,13 @@ class MinMaxIntegerField(IntegerField):
 
 class RemoteAbstract():
     def __init__(self, dic):
-        self.__dict__ = dic
-        getattr(self, "pin")
+        self.pin = dic["pin"]
+        self.name = dic["name"]
 
     # Gets information from database
     def input(self, data):
         pass
+
     # Modifies database
     def output(self, database, query):
         pass
@@ -77,25 +78,23 @@ class RemoteAbstract():
 class RemoteSimpleOutput(RemoteAbstract):
     def __init__(self, dic):
         super().__init__(dic)
-        if DEBUG:
-            pass
-        else:
+
+        if not DEBUG:
             try:
                 self.device = OutputDevice(dic["pin"])
             except Exception as e:
                 raise e
 
     def input(self, data):
-        if DEBUG:
-            pass
-        else:
+        if not DEBUG:
             if data["keep_on"]:
                 self.device.on()
             else:
                 self.device.off()
 
     def close(self):
-        self.device.close()
+        if not DEBUG:
+            self.device.close()
 
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")

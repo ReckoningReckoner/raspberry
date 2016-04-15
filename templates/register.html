@@ -1,78 +1,54 @@
 <!DOCTYPE html>
-
-<html>
-    <head>
-        <!--Import Google Icon Font-->
-        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!--Import materialize.css-->
-        <link type="text/css" rel="stylesheet" href="/static/css/materialize.min.css"  media="screen,projection"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-
+{% extends 'base.html' %}
+{% block head %}
         <title> New Remote </title>
-    </head>
+{% endblock %}
 
-    <body>
-        <!-- nav header bar -->
-        <nav>
-            <div class="nav-wrapper red lighten-2">
-                <div class="container">
-                    <a href="/" class="breadcrumb">Home Automation</a>
-                    <a href="/new" class="breadcrumb">Add New Remote</a>
+{% block body %}
+    <nav>
+        <div class="nav-wrapper red lighten-2">
+            <div class="container">
+                <a href="/" class="breadcrumb">Home Automation</a>
+                <a href="/new" class="breadcrumb hide-on-small-only">Add New Remote</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h3> Create new a new remote </h3>
+
+        <!-- Display errors -->
+        {% with error = get_flashed_messages() %}
+            {% if error %}
+                {% for e in error %}
+                <p class="error text-red"> {{e}} </p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+      <form method=post action="">
+            {% for f in form %}
+            <div class="row">
+                <div class="col s12 m10">
+                    {% if f.type == "BooleanField"%}
+                        <p> {{f.label.text}} </p>
+                        <div class="switch">
+                            <label> Off {{f}} <span class="lever">.</span> On </label>
+                        </div>
+                    {% else %}
+                        {{f(placeholder=f.label.text, class="validate")}}
+                    {% endif %}
                 </div>
             </div>
-        </nav>
+            {% endfor %}
 
-        <div class="container">
-            <h3> Create new a new remote </h3>
-           <!-- Display errors -->
-            {% with error = get_flashed_messages() %}
-                {% if error %}
-                    {% for e in error %}
-                    <p class=error><font color ="red"> {{e}}</font> </p>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-          <form method=post action="">
-                {% for f in form %}
-                <div class="row">
-                    <div class="col s12 m10">
-                        {% if f.type == "MinMaxIntegerField"%}
-                            {%if f.min is none or f.max is none%} 
-                                {{f(placeholder=f.label.text, class="validate", type="number")}}
-                            {% else %}
-                                {{f(placeholder=f.label.text, class="validate", type="number",
-                                min=f.min, max=f.max)}}
-                            {% endif %}
-                        {% elif f.type == "BooleanField"%}
-                            <p> {{f.label.text}} </p>
-                            <div class="switch">
-                                <label>
-                                    Off
-                                    {{f}}
-                                    <span class="lever">.</span>
-                                    On
-                                </label>
-                            </div>
-                        {% else %}
-                            {{f(placeholder=f.label.text, class="validate")}}
-                        {% endif %}
-                    </div>
+            <div class="row">
+                <div class="col m6">
+                    <button class="red lighten-2 waves-effect btn">Create New Remote</button>
+                    <a href="/" class="red lighten-2 waves-effect btn">Go Back</a>
                 </div>
-                {% endfor %}
+            </div>
 
-                <div class="row">
-                    <div class="col m6">
-                        <button class="red lighten-2 waves-effect btn">Create New Remote</button>
-                        <a href="/" class="red lighten-2 waves-effect btn">Go Back</a>
-                    </div>
-                </div>
-
-            </form>
-        </div>
-
-        <!--Import jQuery before materialize.js-->
-        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="/static/js/materialize.min.js"></script>
-    </body>
-</html>
+        </form>
+    </div>
+{% endblock %}
