@@ -1,135 +1,51 @@
 <!DOCTYPE html>
-<html>
+{% extends 'base.html' %}
 
-    <head>
-        <!--Import Google Icon Font-->
-        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!--Import materialize.css-->
-        <link type="text/css" rel="stylesheet" href="/static/css/materialize.min.css"  media="screen,projection"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+{% block head %}
+    <title> Home Automation </title>
+{% endblock %}
 
-        <title> Home Automation </title>
-    </head>
-
-    <body>
-        <!-- logo -->
-        <nav>
-            <div class="nav-wrapper red lighten-2">
-                <div class="container">
-                    <ul id="nav-mobile" class="left hide-on-med-and-down">
-                        <li><a href="/new">Add New Remote</a></li>
-                    </ul>
-                </div>
-                <a href="/" class="brand-logo center">Home Automation</a>
+{% block body %}
+    <nav>
+        <div class="nav-wrapper red lighten-2">
+            <div class="container">
+                <ul id="nav-mobile" class="left hide-on-med-and-down">
+                    <li><a href="/new">Add New Remote</a></li>
+                </ul>
             </div>
-        </nav>
+            <a href="/" class="brand-logo center">Home Automation</a>
+        </div>
+    </nav>
 
-        <div class="container">
-            {% if remotes|length == 0 %}
-            <!-- No remote message -->
+    <div class="container">
+        {% if remotes|length == 0 %} <!-- No remote message -->
             <div class="row">
                 <h5 class="center"> You have no remotes </h5>
             </div>
-            {% else %}
-            <!-- new remote button -->
-            <!-- adding a card -->
+        {% else %} <!-- new remote button -->
             <div class="row">
                 {% for remote in remotes %}
-
-                <div class="col s12 m6">
-
-                    <div class="card">
-
-                        <div class="card-content">
-                            <span class="card-title activator">
-                                {{remote["name"]}}
-                                <i class="material-icons right">more_vert</i>
-                            </span>
-                            <p>
-                            The remote is currently
-                            {% if remote["keep_on"] %}
-                            <a class="large green-text text-lighten-2"> ON </a>
-                            {% else %}
-                            <a class="medium red-text text-lighten-2"> OFF </a>
-                            {% endif %}
-                            </p>
-                        </div>
-
-                        <div class="card-reveal">
-                            <span class="card-title">
-                                <i class="material-icons right">done</i>
-                            </span>
-                            <p>Name: {{remote["name"]}} </p>
-                            <p>
-                            Current State:
-                            {% if remote["keep_on"] %}
-                            <a class="green-text text-lighten-2"> ON </a>
-                            {% else %}
-                            <a class="red-text text-lighten-2"> OFF </a>
-                            {% endif %}
-                            </p>
-                            <p>This is a {{remote["type"]}} connected to GPIO pin {{remote["pin"]}} </p>
-                        </div>
-
-                        <div class="card-action">
-                            <form method=post action="/">
-                                <!-- Switch button -->
-                                <button class="waves-effect btn-flat"
-                                        value={{remote['pin']}} name=toggle>Switch on/off</button>
-
-                                <!-- Show delete confirmation -->
-                                <button class="modal-trigger right btn-floating red lighten-2 waves-effect z-depth-0"
-                                        data-target={{remote['pin']}} >
-                                    <i class="material-icons right text-black"> close </i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- delete confirmation box -->
-                <div id={{remote['pin']}} class="modal">
-                    <div class="modal-content">
-                        <h4>Delete Remote</h4>
-                        <p>Are you sure you want to permanently delete "{{remote['name']}}"?</p>
-                    </div>
-
-
-                    <!-- Agree/disagree panel -->
-                    <div class="modal-footer">
-                        <form method=post action="/">
-                            <!-- delete option -->
-                            <button class="btn-flat waves-efect"
-                                    value={{remote['pin']}} name=delete>Delete Permanently</button>
-                            <!-- cancel option -->
-                            <a class="btn-flat modal-close waves-effect">Go Back</a>
-                        </form>
-                    </div>
-                </div>
+                    {% include 'cards/' + remote['type'] + '.html' %}
                 {% endfor %}
-
             </div>
-            {% endif %}
+        {% endif %}
 
-            <!-- new remote button -->
+        <!-- new remote button -->
+        <div class="row" >
             <p class="center">
-            <a href="/new" class="red lighten-2 waves-effect btn">
-                Add New Remote
-            </a>
+                <a href="/new" class="red lighten-2 waves-effect btn">
+                    Add New Remote
+                </a>
             </p>
         </div>
+    </div>
+{% endblock %}
 
-
-        <!--Import jQuery before materialize.js-->
-        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="/static/js/materialize.min.js"></script>
-
-        <!-- agree disagree modal -->
-        <script>
-        $(document).ready(function() {
-            $('.modal-trigger').leanModal();
-        });
-        </script>
-    </body>
-</html>
-
+{% block script %}
+    <!-- agree disagree modal -->
+    <script>
+    $(document).ready(function() {
+        $('.modal-trigger').leanModal();
+    });
+    </script>
+{% endblock %}

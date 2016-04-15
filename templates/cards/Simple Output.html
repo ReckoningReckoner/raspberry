@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+{% extends 'cards/base_card.html' %}
+
+{% block short_msg %}
+    <p>
+        The remote is currently
+        {% if remote["keep_on"] %}
+            <a class="large green-text text-lighten-2"> ON </a>
+        {% else %}
+            <a class="medium red-text text-lighten-2"> OFF </a>
+        {% endif %}
+    </p>
+{% endblock %}
+
+{% block long_msg %}
+    <p>Name: {{remote["name"]}} </p>
+    <p>
+        Current State:
+        {% if remote["keep_on"] %}
+            <a class="green-text text-lighten-2"> ON </a>
+        {% else %}
+            <a class="red-text text-lighten-2"> OFF </a>
+        {% endif %}
+    </p>
+    <p>This is a {{remote["type"]}} connected to GPIO pin {{remote["pin"]}} </p>
+{% endblock %}
+
+{% block button %}
+    <!-- Switch button -->
+    <button class="waves-effect btn-flat"
+            value={{remote['pin']}} name=toggle>Switch on/off</button>
+{% endblock %}
