@@ -1,4 +1,4 @@
-# This class communicates between remotes (the hardware) and the
+
 # database. It also gets input from the web server.
 # The database is essentially a JSON file that has certain attributes.
 # Those attributes can be used as an input for an ouput device, e.g.
@@ -7,18 +7,19 @@
 
 
 from tinydb import TinyDB, Query
-from time import sleep, time
-from remote_object import RemoteSimpleOutput
+from time import time, sleep
+from backend.remote_object import RemoteSimpleOutput
 
 
 # Class for holding all the remotes
 
 class Remote():
     def __init__(self):
-        self.db = TinyDB("database.json")
+        self.db = TinyDB("backend/database.json")
         self.query = Query()
         print("Loaded Database")
 
+        self.valid_types = ["SimpleOutput"]
         self.remotes = {}
         for remote in self.to_dict():
             self._add_locally(remote)
@@ -35,16 +36,20 @@ class Remote():
                 sleep(1)  # Prevents the system from going too fast
                 to_debug = self._show_debug_output()
                 self._run_the_remotes(to_debug)
+                self._sync()
 
             except RuntimeError as e:
                 print(e)
                 print("Continuing anyway")
                 continue
 
+    def _sync(self):
+        pass
+
     # Debug output
     def _show_debug_output(self):
         current_time = int(time())
-        debug = current_time % 5 == 0
+        debug = current_time % 2 == 0
         if debug:
             print("Time is: ", current_time, "\n")
             print("size of db:", len(self.db))
@@ -64,11 +69,11 @@ class Remote():
                     print("db", remote)
 
     # checks if it's a duplicate
-    def _check_for_duplicate_pin(self, d={}, pin=None):
+    def _check_for_duplicate_pin(self, dic={}, pin=None):
         if pin is None:
-            result = self.db.get(self.query["pin"] == d["pin"])
+            result = self.get_remote_data(dic["pin"])
         else:
-            result = self.db.get(self.query["pin"] == pin)
+            result = self.get_remote_data(pin)
 
         if result is not None:  # GPIO duplicate pin error
             raise ValueError("GPIO Pin in use either" +
@@ -87,49 +92,86 @@ class Remote():
 
     # adds to remote dictionary only. Should onyl be used during init
     def _add_locally(self, remote):
-        if remote["type"] == "Simple Output":
+        if remote["type"] == "SimpleOutput":
             self._new_RemoteSimpleOutput(remote)
-        else:
-            raise TypeError("Invalid remote type")
+        elif remote["type"] not in self.valid_types:
+            print("Not including remotes of type" + remote)
 
     # adds to the dictionary and database
     def add(self, remote):
         try:
             print(remote)
-            self._check_for_duplicate_pin(d=remote)
+            self._check_for_duplicate_pin(dic=remote)
             self._add_locally(remote)
             self.db.insert(remote)
+
             print("# of remotes is:", len(self.remotes))
         except Exception as e:
             raise e
-
-    def to_dict(self):
-        return self.db.all()
 
     # toggles a certain key
     def toggle(self, pin, key="keep_on"):
         if type(pin) is not int:
             pin = int(pin)
 
-        result = self.db.get(self.query["pin"] == pin)
+        result = self.get_remote_data(pin)
 
         if result[key]:
             new_bool = False
         else:
             new_bool = True
 
-        self.db.update({key: new_bool}, self.query["pin"] == pin)
+        self.update_remote(pin, {key: new_bool})
+        # self.db.update({key: new_bool}, self.query["pin"] == pin)
 
+    # deletes the remtoe from local memory
+    def _delete_locally(self, pin):
+        if type(pin) is not int:
+            pin = int(pin)
+
+        self.remotes[pin].close()  # Safely remove device
+        self.remotes.pop(pin)
+
+    # Delets from db and local copy
     def delete(self, pin):
         if type(pin) is not int:
             pin = int(pin)
 
-        if pin not in self.remotes:
-            return
-
-        self.remotes[pin].close()  # Safely remove device
-        self.remotes.pop(pin)
         self.db.remove(self.query["pin"] == pin)
+        self._delete_locally(pin)
+
+    # change pin locally
+    def _change_pin_locally(self, pin, dic):
+        pin = int(pin)  # the old pin
+
+        self.remotes[int(dic["pin"])] = self.remotes.pop(pin)
+        self.remotes[int(dic["pin"])].change_pin(int(dic["pin"]))
+
+    # Updates database
+    def update_remote(self, pin, dic):
+        if type(pin) is not int:
+            pin = int(pin)
+
+        if "pin" in dic and int(dic["pin"]) != pin:  # switching pins
+            try:
+                self._check_for_duplicate_pin(dic=dic)
+            except ValueError as e:
+                raise e
+
+        self.db.update(dic, self.query["pin"] == pin)
+        if "pin" in dic:
+            self._change_pin_locally(pin, dic)
+
+    # Returns value from db by pin
+    def get_remote_data(self, pin):
+        if type(pin) is not int:
+            pin = int(pin)
+
+        result = self.db.get(self.query["pin"] == pin)
+        return result
+
+    def to_dict(self):
+        return self.db.all()
 
 if __name__ == "__main__":
     print("nothing to do!")

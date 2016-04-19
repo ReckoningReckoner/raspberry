@@ -37,8 +37,12 @@ class RemoteAbstract():
         self.pin = dic["pin"]
         self.name = dic["name"]
 
+    def change_pin(self, new_pin):
+        self.pin = new_pin
+
     # Gets information from database
     def input(self, data):
+        self.pin = data["pin"]
         pass
 
     # Modifies database
@@ -85,6 +89,11 @@ class RemoteSimpleOutput(RemoteAbstract):
             except Exception as e:
                 raise e
 
+    def change_pin(self, pin):
+        super().change_pin(pin)
+        if not DEBUG:
+            self.device = OutputDevice(pin)
+
     def input(self, data):
         if not DEBUG:
             if data["keep_on"]:
@@ -98,10 +107,10 @@ class RemoteSimpleOutput(RemoteAbstract):
 
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")
-        remote_type = "Simple Output"
+        type = "SimpleOutput"
 
         def to_dic(self, form):
             dic = super().to_dic(form)
-            dic["type"] = form.remote_type
+            dic["type"] = form.type
             dic["keep_on"] = form.keep_on.data
             return dic
