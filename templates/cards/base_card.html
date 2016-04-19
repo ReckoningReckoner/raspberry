@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <div class="col s12 m6">
 
     <div class="card">
@@ -16,38 +15,18 @@
             <span class="card-title">
                 <i class="material-icons right">done</i>
             </span>
+
             {% block long_msg %}{% endblock %}
         </div>
 
         <div class="card-action">
             <form method=post action="/">
                 {% block button %}{% endblock %}
-                <!-- Show delete confirmation -->
-                <button class="modal-trigger right btn-floating red lighten-2 waves-effect z-depth-0"
-                        data-target={{remote['pin']}} >
-                        <i class="material-icons right text-black"> close </i>
-                </button>
+                <!-- edit a button -->
+                <a href="/edit/{{remote['pin']}}" >
+                    <i class="material-icons right"> mode_edit </i>
+                </a>
             </form>
         </div>
-    </div>
-</div>
-
-<!-- delete confirmation box -->
-<div id={{remote['pin']}} class="modal">
-    <div class="modal-content">
-        <h4>Delete Remote</h4>
-        <p>Are you sure you want to permanently delete "{{remote['name']}}"?</p>
-    </div>
-
-
-    <!-- Agree/disagree panel -->
-    <div class="modal-footer">
-        <form method=post action="/">
-            <!-- delete option -->
-            <button class="btn-flat waves-efect"
-                    value={{remote['pin']}} name=delete>Delete Permanently</button>
-            <!-- cancel option -->
-            <a class="btn-flat modal-close waves-effect">Go Back</a>
-        </form>
     </div>
 </div>

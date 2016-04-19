@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+{% extends 'register.html' %}
+
+{% block head %}
+    <title> Edit {{remote["name"]}} </title>
+{% endblock %}
+
+{% block title %}
+    <h3> Editing {{remote["name"]}} </h3>
+{% endblock %}
+
+
+{% block list %}
+    <a href="/edit/{{remote['pin']}}"
+       class="breadcrumb hide-on-small-only">Edit {{ remote_type}}</a>
+{% endblock %}
+
+{% block button %}
+    <button class="btn red lighten-2 waves-efect"
+            value={{remote['pin']}}
+            name=edit>Save Changes
+    </button>
+
+    <button class="modal-trigger btn red lighten-2 waves-effect"
+            data-target={{remote['pin']}} name=edit >
+            Delete Remote 
+    </button>
+
+    <!-- delete confirmation box -->
+    <div id="{{remote['pin']}}" class="modal">
+        <div class="modal-content">
+            <h4>Delete Remote</h4>
+            <p>Are you sure you want to permanently delete "{{remote['name']}}"?</p>
+        </div>
+
+
+        <!-- Agree/disagree panel -->
+        <div class="modal-footer">
+            <form method=post action="/">
+
+                <!-- delete option -->
+                <button class="btn-flat waves-efect"
+                        value={{remote['pin']}}
+                        name=delete>Delete Permanently</button>
+                <!-- cancel option -->
+                <a class="btn-flat modal-close waves-effect">Go Back</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <!-- agree disagree modal -->
+    <script>
+    $(document).ready(function() {
+        $('.modal-trigger').leanModal();
+    });
+    </script>
+{% endblock %}

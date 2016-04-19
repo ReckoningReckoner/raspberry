@@ -2,44 +2,49 @@
 {% extends 'breadcrumb.html' %}
 
 {% block head %}
-    <title> Add {{ remote_type}} </title>
+    <title> Add {{remote_type}} </title>
 {% endblock %}
 
 {% block list %}
     <a href="/new/{{remote_type}}" class="breadcrumb hide-on-small-only">Add {{ remote_type}}</a>
 {% endblock %}
 
-{% block body %}
-    <h3> Create new a new remote </h3>
 
+{% block body %}
+
+    {% block title %}
+        <h3> Create new a new remote </h3>
+    {% endblock %}
     <!-- Display errors -->
     {% with error = get_flashed_messages() %}
         {% if error %}
             {% for e in error %}
-            <p class="error text-red"> {{e}} </p>
+            <p class="error red-text"> {{e}} </p>
             {% endfor %}
         {% endif %}
     {% endwith %}
 
     <form method=post action="">
         {% for f in form %}
-        <div class="row">
-            <div class="col s12 m10">
-                {% if f.type == "BooleanField"%}
-                <p> {{f.label.text}} </p>
-                <div class="switch">
-                    <label> Off {{f}} <span class="lever">.</span> On </label>
+            <div class="row">
+                <div class="col s12 m10">
+                    {% if f.type == "BooleanField"%}
+                    <p> {{f.label.text}} </p>
+                    <div class="switch">
+                        <label> Off {{f}} <span class="lever">.</span> On </label>
+                    </div>
+                    {% else %}
+                        {{f(placeholder=f.label.text, class="validate")}}
+                    {% endif %}
                 </div>
-                {% else %}
-                {{f(placeholder=f.label.text, class="validate")}}
-                {% endif %}
             </div>
-        </div>
         {% endfor %}
 
         <div class="row">
             <div class="col m6">
-                <button class="red lighten-2 waves-effect btn">Create New Remote</button>
+                {% block button %}
+                    <button class="red lighten-2 waves-effect btn">Create New Remote</button>
+                {% endblock %}
                 <a href="/" class="red lighten-2 waves-effect btn">Go Back</a>
             </div>
         </div>
