@@ -1,4 +1,4 @@
-# This class communicates between remotes (the hardware) and the
+
 # database. It also gets input from the web server.
 # The database is essentially a JSON file that has certain attributes.
 # Those attributes can be used as an input for an ouput device, e.g.
@@ -121,7 +121,8 @@ class Remote():
         else:
             new_bool = True
 
-        self.db.update({key: new_bool}, self.query["pin"] == pin)
+        self.update_remote(pin, {key: new_bool})
+        # self.db.update({key: new_bool}, self.query["pin"] == pin)
 
     # deletes the remtoe from local memory
     def _delete_locally(self, pin):
@@ -139,12 +140,12 @@ class Remote():
         self.db.remove(self.query["pin"] == pin)
         self._delete_locally(pin)
 
-    def _update_remote_locally(self, pin, dic):
-        if type(pin) is not int:
-            pin = int(pin)
+    # change pin locally
+    def _change_pin_locally(self, pin, dic):
+        pin = int(pin)  # the old pin
 
-        self.remotes[dic["pin"]] = self.remotes.pop(pin)
-        self.remotes[dic["pin"]].change_pin(dic["pin"])
+        self.remotes[int(dic["pin"])] = self.remotes.pop(pin)
+        self.remotes[int(dic["pin"])].change_pin(int(dic["pin"]))
 
     # Updates database
     def update_remote(self, pin, dic):
@@ -158,7 +159,8 @@ class Remote():
                 raise e
 
         self.db.update(dic, self.query["pin"] == pin)
-        self._update_remote_locally(self, pin, dic)
+        if "pin" in dic:
+            self._change_pin_locally(pin, dic)
 
     # Returns value from db by pin
     def get_remote_data(self, pin):
