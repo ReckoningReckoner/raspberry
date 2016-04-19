@@ -7,7 +7,7 @@ import wtforms
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 
-DEBUG = False
+DEBUG = True
 if not DEBUG:  # if not editing from the raspberry pi
     from gpiozero import OutputDevice
 else:
@@ -98,7 +98,7 @@ class RemoteSimpleOutput(RemoteAbstract):
 
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")
-        remote_type = "Simple Output"
+        remote_type = "SimpleOutput"
 
         def to_dic(self, form):
             dic = super().to_dic(form)

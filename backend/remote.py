@@ -8,7 +8,7 @@
 
 from tinydb import TinyDB, Query
 from time import sleep, time
-from remote_object import RemoteSimpleOutput
+from backend.remote_object import RemoteSimpleOutput
 
 
 # Class for holding all the remotes
@@ -19,6 +19,7 @@ class Remote():
         self.query = Query()
         print("Loaded Database")
 
+        self.valid_types = ["SimpleOutput"]
         self.remotes = {}
         for remote in self.to_dict():
             self._add_locally(remote)
@@ -87,10 +88,10 @@ class Remote():
 
     # adds to remote dictionary only. Should onyl be used during init
     def _add_locally(self, remote):
-        if remote["type"] == "Simple Output":
+        if remote["type"] == "SimpleOutput":
             self._new_RemoteSimpleOutput(remote)
-        else:
-            raise TypeError("Invalid remote type")
+        elif remote["type"] not in self.valid_types:
+            print("Not including remotes of type" + remote)
 
     # adds to the dictionary and database
     def add(self, remote):

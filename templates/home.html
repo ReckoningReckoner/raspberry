@@ -5,7 +5,7 @@
     <title> Home Automation </title>
 {% endblock %}
 
-{% block body %}
+{% block navbar %}
     <nav>
         <div class="nav-wrapper red lighten-2">
             <div class="container">
@@ -16,36 +16,52 @@
             <a href="/" class="brand-logo center">Home Automation</a>
         </div>
     </nav>
+{% endblock %}
 
-    <div class="container">
-        {% if remotes|length == 0 %} <!-- No remote message -->
-            <div class="row">
-                <h5 class="center"> You have no remotes </h5>
-            </div>
-        {% else %} <!-- new remote button -->
-            <div class="row">
-                {% for remote in remotes %}
-                    {% include 'cards/' + remote['type'] + '.html' %}
-                {% endfor %}
-            </div>
-        {% endif %}
+{% block body %}
+    {% if remotes|length == 0 %} <!-- No remote message -->
+    <div class="row">
+        <h5 class="center"> You have no remotes </h5>
+    </div>
+    {% else %} <!-- new remote button -->
+    <div class="row">
+        {% for remote in remotes %}
+        {% include 'cards/' + remote['type'] + '.html' %}
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        <!-- new remote button -->
-        <div class="row" >
-            <p class="center">
-                <a href="/new" class="red lighten-2 waves-effect btn">
-                    Add New Remote
-                </a>
-            </p>
-        </div>
+    <!-- new remote button -->
+
+    <div class="row" >
+        <p class="center">
+            <a data-activates='dropdown1'
+               class="dropdown-button red lighten-2 waves-effect btn">
+                Add New Remote
+            </a>
+        </p>
+        <ul id='dropdown1' class='dropdown-content'>
+            {% for type in valid_types %}
+                <li><a href="new/{{type}}">{{type}}</a></li>
+                <li class="divider"></li>
+            {% endfor %}
+        </ul>
     </div>
 {% endblock %}
 
 {% block script %}
     <!-- agree disagree modal -->
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
     <script>
     $(document).ready(function() {
         $('.modal-trigger').leanModal();
     });
+    </script>
+    <script type="text/javascript" charset="utf-8">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket.on('connect', function() {
+            socket.emit('my event', {data: 'I\'m connected!'});
+        });
     </script>
 {% endblock %}

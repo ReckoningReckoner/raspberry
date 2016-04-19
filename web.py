@@ -3,17 +3,26 @@
 
 from flask import Flask, request, flash, redirect, url_for, render_template
 from threading import Thread
-from remote import Remote
-from remote_object import RemoteSimpleOutput
+from backend.remote import Remote
+from backend.remote_object import RemoteSimpleOutput
 import traceback
 
 app = Flask(__name__)
 app.secret_key = "I love Gloria"
 
 
-@app.route("/new", methods=['GET', 'POST'])
-def new_Remote():
-    form = RemoteSimpleOutput.Form(request.form)
+@app.route("/new")
+def new_RemoteOption():
+    return redirect(url_for("index"))
+
+
+@app.route("/new/<remote_type>", methods=['GET', 'POST'])
+def new_Remote(remote_type):
+    print(remote_type)
+    if remote_type == "SimpleOutput":
+        form = RemoteSimpleOutput.Form(request.form)
+    else:
+        return redirect(url_for("new_RemoteOption"))
 
     if request.method == "POST":
 
@@ -35,14 +44,13 @@ def new_Remote():
             return render_template('register.html', form=form)
 
     elif request.method == "GET":
-        return render_template('register.html', form=form)
+        return render_template('register.html', form=form,
+                               remote_type=remote_type)
 
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    if request.method == "GET":
-        return render_template('home.html', remotes=r.to_dict())
-    elif request.method == "POST":
+    if request.method == "POST":
         if "toggle" in request.form:
             pin = request.form["toggle"]
             r.toggle(int(pin))
@@ -50,7 +58,11 @@ def index():
             pin = request.form["delete"]
             r.delete(int(pin))
 
-        return render_template('home.html', remotes=r.to_dict())
+        print("YOLO", r.valid_types)
+
+    return render_template('home.html',
+                           remotes=r.to_dict(),
+                           valid_types=r.valid_types)
 
 
 if __name__ == "__main__":

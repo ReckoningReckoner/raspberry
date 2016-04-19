@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block navbar %}
+    <nav>
+        <div class="nav-wrapper red lighten-2">
+            <div class="container">
+                <a href="/" class="breadcrumb">Home Automation</a>
+                {% block list %}{% endblock %}
+            </div>
+        </div>
+    </nav>
+{% endblock %}
