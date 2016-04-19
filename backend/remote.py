@@ -43,6 +43,9 @@ class Remote():
                 print("Continuing anyway")
                 continue
 
+    def _sync(self):
+        pass
+
     # Debug output
     def _show_debug_output(self):
         current_time = int(time())
@@ -120,6 +123,7 @@ class Remote():
 
         self.db.update({key: new_bool}, self.query["pin"] == pin)
 
+    # deletes the remtoe from local memory
     def _delete_locally(self, pin):
         if type(pin) is not int:
             pin = int(pin)
