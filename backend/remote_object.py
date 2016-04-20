@@ -10,6 +10,7 @@ from wtforms import validators
 DEBUG = True
 if not DEBUG:  # if not editing from the raspberry pi
     from gpiozero import OutputDevice
+    from gpiozero import MotionSensor as Motion
 else:
     print("DEBUG MODE IS ON, HARDWARE WILL NOT WORK")
 
@@ -92,7 +93,7 @@ class SimpleOutput(RemoteAbstract):
     def change_pin(self, pin):
         super().change_pin(pin)
         if not DEBUG:
-            self.device = OutputDevice(pin)
+            self.device = OutputDevice(self.pin)
 
     def input(self, data):
         if not DEBUG:
@@ -148,11 +149,26 @@ class SimpleInput(RemoteAbstract):
 class MotionSensor(SimpleInput):
     def __init__(self, dic):
         super().__init__(dic)
+        if not DEBUG:
+            try:
+                self.device = Motion(self.pin)
+            except Exception as e:
+                raise e
+
+    def is_active(self):
+        if not DEBUG:
+            return self.device.is_active
+        else:
+            return True
 
     def output(self, database, query):
-        from random import randint
-        self.data = randint(1, 5)
+        import time
+
+        if self.is_active():
+            self.data = int(time.time())
+
         super().output(database, query)
 
     def close(self):
-        pass
+        if not DEBUG:
+            self.close()

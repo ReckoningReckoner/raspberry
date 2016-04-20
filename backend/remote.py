@@ -12,7 +12,7 @@ import backend.remote_object
 
 
 # Class for holding all the remotes
-
+# TODO Fix duplicate errors
 class Remote():
     def __init__(self):
         self.db = TinyDB("backend/database.json")
@@ -67,7 +67,15 @@ class Remote():
     # checks if it's a duplicate
     def _check_for_duplicate_pin(self, dic={}, pin=None):
         if pin is None:
-            result = self.get_remote_data(dic["pin"])
+            if "pins" in dic:  # a list of pin inside the dic
+                try:
+                    for pin_key in dic["pins"]:
+                        self._check_for_duplicate_pin(pin=dic[pin_key])
+                except ValueError as e:
+                    raise e
+
+            else:
+                result = self.get_remote_data(dic["pin"])
         else:
             result = self.get_remote_data(pin)
 
