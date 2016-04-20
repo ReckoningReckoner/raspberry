@@ -25,15 +25,15 @@
 
 {% block body %}
     {% if remotes|length == 0 %} <!-- No remote message -->
-    <div class="row">
-        <h5 class="center"> You have no remotes </h5>
-    </div>
+        <div class="row">
+            <h5 class="center"> You have no remotes </h5>
+        </div>
     {% else %} <!-- new remote button -->
-    <div class="row">
-        {% for remote in remotes %}
-            {% include 'cards/' + remote['type'] + '.html' %}
-        {% endfor %}
-    </div>
+        <div class="row">
+            {% for remote in remotes %}
+                {% include 'cards/' + remote['type'] + '.html' %}
+            {% endfor %}
+        </div>
     {% endif %}
 
     <!-- new remote button -->
@@ -42,7 +42,7 @@
         <p class="center">
             <a data-activates='new_remote_type'
                class="dropdown-button red lighten-2 waves-effect btn">
-                Add New Remote
+               Add New Remote
             </a>
         </p>
         <ul id='new_remote_type' class='dropdown-content'>

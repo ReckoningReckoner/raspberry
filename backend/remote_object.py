@@ -7,7 +7,7 @@ import wtforms
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 
-DEBUG = False
+DEBUG = True
 if not DEBUG:  # if not editing from the raspberry pi
     from gpiozero import OutputDevice
 else:
@@ -107,10 +107,40 @@ class RemoteSimpleOutput(RemoteAbstract):
 
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")
-        type = "SimpleOutput"
 
         def to_dic(self, form):
             dic = super().to_dic(form)
-            dic["type"] = form.type
+            dic["type"] = "SimpleOutput"
             dic["keep_on"] = form.keep_on.data
             return dic
+
+# Simple Input Device, this class should be subclassed
+
+
+class RemoteSimpleInput(RemoteAbstract):
+    def __init__(self, dic):
+        super().__init__(dic)
+        self.data = None
+
+    def output(self, database, query):
+        database.update({"data": self.data}, query["pin"] == self.pin)
+
+    class Form(RemoteAbstract.Form):
+
+        def to_dic(self, form):
+            dic = super().to_dic(form)
+            dic["type"] = "SimpleInput"
+            dic["data"] = None
+            return dic
+
+# A motion sensor
+
+
+class RemoteMotionSensor(RemoteSimpleInput):
+    def __init__(self, dic):
+        super().__init__(dic)
+
+    def output(self, database, query):
+        from random import randint
+        self.data = randint(5)
+        super().output(database, query)

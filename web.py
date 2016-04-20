@@ -4,29 +4,15 @@
 from flask import Flask, request, flash, redirect, url_for, render_template
 from threading import Thread
 from backend.remote import Remote
-from backend.remote_object import RemoteSimpleOutput
 import traceback
 
 app = Flask(__name__)
 app.secret_key = "I love Gloria"
 
 
-def get_relevant_form(remote_type):
-    if remote_type == "SimpleOutput":
-        return RemoteSimpleOutput.Form(request.form)
-    else:
-        return None
-
-
-@app.route("/edit")
-@app.route("/new")
-def new_RemoteOption():
-    return redirect(url_for("index"))
-
-
 @app.route("/new/<remote_type>", methods=['GET', 'POST'])
 def new_Remote(remote_type):
-    form = get_relevant_form(remote_type)
+    form = r.get_relevant_type(remote_type).Form(request.form)
 
     if form is None:  # this means that the form doesn't exist in the db
         return redirect(url_for("new_RemoteOption"))
@@ -64,7 +50,7 @@ def edit(pin):
     if data is None:
         return redirect(url_for("index"))
 
-    form = get_relevant_form(data["type"])
+    form = r.get_relevant_type(data["type"]).Form(request.form)
 
     if request.method == "POST":
         if "delete" in request.form:

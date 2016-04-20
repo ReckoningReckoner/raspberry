@@ -9,6 +9,7 @@
 from tinydb import TinyDB, Query
 from time import time, sleep
 from backend.remote_object import RemoteSimpleOutput
+from backend.remote_object import RemoteSimpleInput
 
 
 # Class for holding all the remotes
@@ -19,7 +20,7 @@ class Remote():
         self.query = Query()
         print("Loaded Database")
 
-        self.valid_types = ["SimpleOutput"]
+        self.valid_types = ["SimpleOutput", "MotionSensor"]
         self.remotes = {}
         for remote in self.to_dict():
             self._add_locally(remote)
@@ -81,21 +82,27 @@ class Remote():
                              " the remote currently using " +
                              " this pin")
 
-    # adds to database
-    def _new_RemoteSimpleOutput(self, remote):
-        try:
-            import copy
-            r = RemoteSimpleOutput(copy.deepcopy(remote))
-            self.remotes[remote['pin']] = r
-        except Exception as e:
-            raise e
+    # pass a name into method, will return relevant classs
+    def get_relevant_type(self, remote_type):
+        if remote_type == "SimpleOutput":
+            return RemoteSimpleOutput
+        elif remote_type == "SimpleInput":
+            return RemoteSimpleInput
+        elif remote_type == "MotionSensor":
+            return "MotionSensor"
+        else:
+            return None
 
     # adds to remote dictionary only. Should onyl be used during init
     def _add_locally(self, remote):
-        if remote["type"] == "SimpleOutput":
-            self._new_RemoteSimpleOutput(remote)
-        elif remote["type"] not in self.valid_types:
-            print("Not including remotes of type" + remote)
+        remote_class = self.get_relevant_type(remote["type"])
+        if remote_class is not None:
+            try:
+                import copy
+                r = remote_class(copy.deepcopy(remote))
+                self.remotes[remote['pin']] = r
+            except Exception as e:
+                raise e
 
     # adds to the dictionary and database
     def add(self, remote):

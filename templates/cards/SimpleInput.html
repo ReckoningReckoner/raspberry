@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% extends 'cards/base_card.html' %}
+
+{% block short_msg %}
+    <p> {{ remote["data"] }} </p>
+{% endblock %}
+
+{% block long_msg %}
+    <p>Name: {{remote["name"]}} </p>
+    <p> {{ remote["data"] }} </p>
+    <p>This is a {{remote["type"]}} connected to GPIO pin {{remote["pin"]}} </p>
+{% endblock %}
+
+{% block button %}
+    <!-- Switch button -->
+    <button class="waves-effect btn-flat" href="/">Refresh</button>
+{% endblock %}
