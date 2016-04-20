@@ -170,13 +170,9 @@ class Remote():
             except ValueError as e:
                 raise e
 
-        try:
-            self.db.update(dic, self.query["pin"] == pin)
-
-            if "pin" in dic:
-                self._change_pin_locally(pin, dic)
-        except NotImplementedError as e:
-            raise e
+        self.db.update(dic, self.query["pin"] == pin) 
+        if "pin" in dic:
+            self._change_pin_locally(pin, dic)
 
     # Returns value from db by pin
     def get_remote_data(self, pin):
