@@ -114,3 +114,14 @@ class RemoteSimpleOutput(RemoteAbstract):
             dic["type"] = form.type
             dic["keep_on"] = form.keep_on.data
             return dic
+
+
+class RemoteSimpleInput(RemoteAbstract):
+    class Form(RemoteAbstract.Form):
+        type = "SimpleInput"
+
+        def to_dic(self, form):
+            dic = super().to_dic(form)
+            dic["type"] = form.type
+            dic["output"] = None
+            return dic
