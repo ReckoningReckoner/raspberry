@@ -19,7 +19,7 @@ class Remote():
         self.query = Query()
         print("Loaded Database")
 
-        self.valid_types = ["SimpleOutput", "MotionSensor"]
+        self.valid_types = ["SimpleOutput", "MotionSensor", "Switch"]
         self.remotes = {}
         for remote in self.to_dict():
             self._add_locally(remote)
