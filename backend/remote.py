@@ -1,4 +1,4 @@
-
+# This class is the brdige between the web server, the remotes, and the
 # database. It also gets input from the web server.
 # The database is essentially a JSON file that has certain attributes.
 # Those attributes can be used as an input for an ouput device, e.g.
@@ -8,8 +8,7 @@
 
 from tinydb import TinyDB, Query
 from time import time, sleep
-from backend.remote_object import RemoteSimpleOutput
-from backend.remote_object import RemoteSimpleInput
+import backend.remote_object
 
 
 # Class for holding all the remotes
@@ -28,24 +27,20 @@ class Remote():
         print("created remotes")
 
     # runs in parallel with the flask server, for physically
-    # displaying the lights (or lack of)
+    # displaying the lights
     def run(self):
         print("Running Remotes")
 
         while True:
             try:
-                sleep(1)  # Prevents the system from going too fast
+                sleep(0.5)  # Prevents the system from going too fast
                 to_debug = self._show_debug_output()
                 self._run_the_remotes(to_debug)
-                self._sync()
 
             except RuntimeError as e:
                 print(e)
                 print("Continuing anyway")
                 continue
-
-    def _sync(self):
-        pass
 
     # Debug output
     def _show_debug_output(self):
@@ -84,12 +79,8 @@ class Remote():
 
     # pass a name into method, will return relevant classs
     def get_relevant_type(self, remote_type):
-        if remote_type == "SimpleOutput":
-            return RemoteSimpleOutput
-        elif remote_type == "SimpleInput":
-            return RemoteSimpleInput
-        elif remote_type == "MotionSensor":
-            return "MotionSensor"
+        if remote_type in self.valid_types:
+            return getattr(backend.remote_object, remote_type)
         else:
             return None
 
@@ -136,16 +127,22 @@ class Remote():
         if type(pin) is not int:
             pin = int(pin)
 
-        self.remotes[pin].close()  # Safely remove device
-        self.remotes.pop(pin)
+        try:
+            self.remotes[pin].close()  # Safely remove device
+            self.remotes.pop(pin)
+        except NotImplementedError as e:
+            raise e
 
     # Delets from db and local copy
     def delete(self, pin):
         if type(pin) is not int:
             pin = int(pin)
 
-        self.db.remove(self.query["pin"] == pin)
-        self._delete_locally(pin)
+        try:
+            self.db.remove(self.query["pin"] == pin)
+            self._delete_locally(pin)
+        except NotImplementedError as e:
+            raise e
 
     # change pin locally
     def _change_pin_locally(self, pin, dic):
@@ -165,9 +162,13 @@ class Remote():
             except ValueError as e:
                 raise e
 
-        self.db.update(dic, self.query["pin"] == pin)
-        if "pin" in dic:
-            self._change_pin_locally(pin, dic)
+        try:
+            self.db.update(dic, self.query["pin"] == pin)
+
+            if "pin" in dic:
+                self._change_pin_locally(pin, dic)
+        except NotImplementedError as e:
+            raise e
 
     # Returns value from db by pin
     def get_remote_data(self, pin):
