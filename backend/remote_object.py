@@ -10,7 +10,9 @@ from wtforms import validators
 DEBUG = False
 if not DEBUG:  # if not editing from the raspberry pi
     from gpiozero import OutputDevice
+    from gpiozero import InputDevice
     from gpiozero import MotionSensor as Motion
+    from gpiozero import Button
 else:
     print("DEBUG MODE IS ON, HARDWARE WILL NOT WORK")
 
@@ -116,25 +118,39 @@ class SimpleOutput(RemoteAbstract):
         return dic
 
 
-class RemoteSimpleInput(RemoteAbstract):
-    class Form(RemoteAbstract.Form):
-        type = "SimpleInput"
-
-    @classmethod
-    def to_dic(cls, form):
-        dic = super().to_dic(form)
-        dic["keep_on"] = form.keep_on.data
-        return dic
-
 # Simple Input Device, this class should be subclassed
 
 
 class SimpleInput(RemoteAbstract):
-    def __init__(self, dic):
+    def __init__(self, dic, Type=InputDevice):
         super().__init__(dic)
         self.data = None
+        if not DEBUG:
+            try:
+                self.Type = Type
+                self.device = self.Type(self.pin)
+            except Exception as e:
+                raise e
 
-    def output(self, database, query):
+    def change_pin(self, pin):
+        super().change_pin(pin)
+        if not DEBUG:
+            self.device = self.Type(self.pin)
+
+    def is_active(self):
+        if not DEBUG:
+            return self.device.is_active
+        else:
+            return True
+
+    def close(self):
+        if not DEBUG:
+            self.device.close()
+
+    def output(self, database, query, data=None):
+        if data is None:
+            data = {"data": self.data}
+
         database.update({"data": self.data}, query["pin"] == self.pin)
 
     @classmethod
@@ -148,27 +164,24 @@ class SimpleInput(RemoteAbstract):
 
 class MotionSensor(SimpleInput):
     def __init__(self, dic):
-        super().__init__(dic)
-        if not DEBUG:
-            try:
-                self.device = Motion(self.pin)
-            except Exception as e:
-                raise e
-
-    def is_active(self):
-        if not DEBUG:
-            return self.device.is_active
-        else:
-            return True
+        super().__init__(dic, Motion)
 
     def output(self, database, query):
         import time
-
         if self.is_active():
             self.data = int(time.time())
 
         super().output(database, query)
 
-    def close(self):
-        if not DEBUG:
-            self.close()
+
+class Swtich(SimpleInput):
+    def __init__(self, dic):
+        super().__init__(dic, Button)
+
+    def output(self, database, query):
+        if self.is_active():
+            self.data = "ON"
+        else:
+            self.data = "OFF"
+
+        super().output(database, query)
