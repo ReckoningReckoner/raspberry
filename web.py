@@ -4,29 +4,16 @@
 from flask import Flask, request, flash, redirect, url_for, render_template
 from threading import Thread
 from backend.remote import Remote
-from backend.remote_object import RemoteSimpleOutput
 import traceback
 
 app = Flask(__name__)
 app.secret_key = "I love Gloria"
 
 
-def get_relevant_form(remote_type):
-    if remote_type == "SimpleOutput":
-        return RemoteSimpleOutput.Form(request.form)
-    else:
-        return None
-
-
-@app.route("/edit")
-@app.route("/new")
-def new_RemoteOption():
-    return redirect(url_for("index"))
-
-
 @app.route("/new/<remote_type>", methods=['GET', 'POST'])
 def new_Remote(remote_type):
-    form = get_relevant_form(remote_type)
+    Remote_Class = r.get_relevant_type(remote_type)
+    form = Remote_Class.Form(request.form)
 
     if form is None:  # this means that the form doesn't exist in the db
         return redirect(url_for("new_RemoteOption"))
@@ -39,7 +26,7 @@ def new_Remote(remote_type):
                     flash("".join(error))
                 raise ValueError("Unable to validate form")
 
-            r.add(form.to_dic(form))
+            r.add(Remote_Class.to_dic(form))
             return redirect(url_for("index"))  # success!
 
         except ValueError as e:  # display error
@@ -64,7 +51,8 @@ def edit(pin):
     if data is None:
         return redirect(url_for("index"))
 
-    form = get_relevant_form(data["type"])
+    Remote_Class = r.get_relevant_type(data["type"])
+    form = Remote_Class.Form(request.form)
 
     if request.method == "POST":
         if "delete" in request.form:
@@ -72,14 +60,12 @@ def edit(pin):
             return redirect(url_for("index"))
         elif "edit" in request.form:
             try:
-
-                print("FORM ABOUT TO SEND IS", form.to_dic(form))
                 if not form.validate():  # form not filled out properly
                     for error in form.errors.values():
                         flash("".join(error))
                     raise ValueError("Cannot Validate Form")
 
-                r.update_remote(pin, form.to_dic(form))
+                r.update_remote(pin, Remote_Class.to_dic(form))
                 print("new db", r.to_dict())
                 return redirect(url_for("index"))  # success!
 
@@ -89,6 +75,9 @@ def edit(pin):
                                        remote_type=data["type"],
                                        form=form,
                                        remote=data)
+            except NotImplementedError as e:
+                flash("Internal Error. Method or class was not found")
+                flash(e)
             except Exception as e:
                 flash(traceback.format_exc())
                 flash(e)
