@@ -109,4 +109,4 @@ if __name__ == "__main__":
     r_thread = Thread(target=r.run)
     r_thread.daemon = True
     r_thread.start()
-    app.run(debug=True, host='0.0.0.0', use_reloader=True)
+    app.run(debug=True, host='0.0.0.0', use_reloader=False)

@@ -1,6 +1,8 @@
 *.pyc
 *.swp
 *.json
+*.jpg
+*.jpeg
 
 # Packages #
 ############
