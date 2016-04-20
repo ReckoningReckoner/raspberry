@@ -174,7 +174,7 @@ class MotionSensor(SimpleInput):
         super().output(database, query)
 
 
-class Swtich(SimpleInput):
+class Switch(SimpleInput):
     def __init__(self, dic):
         super().__init__(dic, Button)
 
