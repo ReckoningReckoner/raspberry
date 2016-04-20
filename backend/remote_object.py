@@ -108,22 +108,16 @@ class SimpleOutput(RemoteAbstract):
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")
 
-        def to_dic(self, form):
-            dic = super().to_dic(form)
-            dic["type"] = form.type
-            dic["keep_on"] = form.keep_on.data
-            return dic
+    @classmethod
+    def to_dic(self, form):
+        dic = super().to_dic(form)
+        dic["keep_on"] = form.keep_on.data
+        return dic
 
 
 class RemoteSimpleInput(RemoteAbstract):
     class Form(RemoteAbstract.Form):
         type = "SimpleInput"
-
-        def to_dic(self, form):
-            dic = super().to_dic(form)
-            dic["type"] = form.type
-            dic["output"] = None
-            return dic
 
     @classmethod
     def to_dic(cls, form):
