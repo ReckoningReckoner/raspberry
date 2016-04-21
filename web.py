@@ -19,12 +19,10 @@ def new_Remote(remote_type):
         return redirect(url_for("new_RemoteOption"))
 
     if request.method == "POST":
-
         try:
             if not form.validate():  # form not filled out properly
                 for error in form.errors.values():
                     flash("".join(error))
-                raise ValueError("Unable to validate form")
 
             r.add(Remote_Class.to_dic(form))
             return redirect(url_for("index"))  # success!
@@ -39,9 +37,8 @@ def new_Remote(remote_type):
             return render_template('register.html', form=form,
                                    remote_type=remote_type)
 
-    elif request.method == "GET":
-        return render_template('register.html', form=form,
-                               remote_type=remote_type)
+    return render_template('register.html', form=form,
+                           remote_type=remote_type)
 
 
 @app.route("/edit/<pin>", methods=["GET", "POST"])

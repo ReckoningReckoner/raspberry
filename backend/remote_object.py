@@ -7,12 +7,12 @@ import wtforms
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 
-DEBUG = False
-if not DEBUG:  # if not editing from the raspberry pi
+if __debug__:  # if not editing from the raspberry pi
     from gpiozero import OutputDevice
-    from gpiozero import InputDevice
+    from gpiozero import GPIODevice
     from gpiozero import MotionSensor as Motion
     from gpiozero import Button
+    from gpiozero import GPIOPinInUse
 else:
     print("DEBUG MODE IS ON, HARDWARE WILL NOT WORK")
 
@@ -36,25 +36,42 @@ class MinMaxIntegerField(IntegerField):
 
 
 class RemoteAbstract():
-    def __init__(self, dic):
+    def __init__(self, dic, Type=None):
         self.pin = dic["pin"]
-        self.name = dic["name"]
+        if __debug__:
+            if Type is None:
+                Type = GPIODevice
+            try:
+                self.Type = Type
+                self.device = self.Type(self.pin)
+            except GPIOPinInUse as e:
+                raise ValueError(str(e))
+            except Exception as e:
+                raise e
+
+    def close(self):
+        if __debug__:
+            self.device.close()
 
     def change_pin(self, new_pin):
         self.close()
-        self.pin = new_pin
+        if __debug__:
+            try:
+                self.device = self.Type(self.pin)
+            except GPIOPinInUse as e:
+                raise ValueError(str(e))
+            except Exception as e:
+                raise e
 
     # Gets information from database
     def input(self, data):
-        self.pin = data["pin"]
-        pass
+        if self.pin != data["pin"]:
+            self.pin = data["pin"]
+            self.change_pin(self.pin)
 
     # Modifies database
     def output(self, database, query):
         pass
-
-    def close(self):
-        raise NotImplementedError
 
     class Form(wtforms.Form):
         name = TextField("Name", [validators.Required(message="Name must not" +
@@ -63,13 +80,14 @@ class RemoteAbstract():
         blank_gpio_message = "GPIO pin must not be left blank"
         wrong_pin_message = "GPIO pin must be between " +\
                             str(MIN_GPIO) + " - " + str(MAX_GPIO)
+
+        blank_validator = validators.Required(message=blank_gpio_message)
+        num_validator = validators.NumberRange(min=MIN_GPIO,
+                                               max=MAX_GPIO,
+                                               message=wrong_pin_message)
+
         pin = MinMaxIntegerField(label="GPIO pin", min=MIN_GPIO, max=MAX_GPIO,
-                                 validators=[validators.Required(
-                                                 message=blank_gpio_message),
-                                             validators.NumberRange(
-                                                 min=MIN_GPIO,
-                                                 max=MAX_GPIO,
-                                                 message=wrong_pin_message)])
+                                 validators=[blank_validator, num_validator])
 
     @classmethod
     def to_dic(cls, form):
@@ -85,29 +103,18 @@ class RemoteAbstract():
 
 class SimpleOutput(RemoteAbstract):
     def __init__(self, dic):
-        super().__init__(dic)
-
-        if not DEBUG:
-            try:
-                self.device = OutputDevice(dic["pin"])
-            except Exception as e:
-                raise e
-
-    def change_pin(self, pin):
-        super().change_pin(pin)
-        if not DEBUG:
-            self.device = OutputDevice(self.pin)
+        if __debug__:
+            super().__init__(dic, OutputDevice)
+        else:
+            super().__init__(dic)
 
     def input(self, data):
-        if not DEBUG:
+        super().input(data)
+        if __debug__:
             if data["keep_on"]:
                 self.device.on()
             else:
                 self.device.off()
-
-    def close(self):
-        if not DEBUG:
-            self.device.close()
 
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")
@@ -123,30 +130,19 @@ class SimpleOutput(RemoteAbstract):
 
 
 class SimpleInput(RemoteAbstract):
-    def __init__(self, dic, Type=InputDevice):
-        super().__init__(dic)
-        self.data = None
-        if not DEBUG:
-            try:
-                self.Type = Type
-                self.device = self.Type(self.pin)
-            except Exception as e:
-                raise e
+    def __init__(self, dic, Type=None):
+        if __debug__:
+            super().__init__(dic, Type)
+        else:
+            super().__init__(dic)
 
-    def change_pin(self, pin):
-        super().change_pin(pin)
-        if not DEBUG:
-            self.device = self.Type(self.pin)
+        self.data = None
 
     def is_active(self):
-        if not DEBUG:
+        if __debug__:
             return self.device.is_active
         else:
             return True
-
-    def close(self):
-        if not DEBUG:
-            self.device.close()
 
     def output(self, database, query, data=None):
         if data is None:
@@ -165,7 +161,10 @@ class SimpleInput(RemoteAbstract):
 
 class MotionSensor(SimpleInput):
     def __init__(self, dic):
-        super().__init__(dic, Motion)
+        if __debug__:
+            super().__init__(dic, Motion)
+        else:
+            super().__init__(dic)
 
     def output(self, database, query):
         import time
@@ -177,12 +176,80 @@ class MotionSensor(SimpleInput):
 
 class Switch(SimpleInput):
     def __init__(self, dic):
-        super().__init__(dic, Button)
+        if __debug__:
+            super().__init__(dic, Button)
+        else:
+            super().__init(dic)
 
     def output(self, database, query):
         if self.is_active():
             self.data = "ON"
         else:
             self.data = "OFF"
-
         super().output(database, query)
+
+
+# The "pin" is for the switch. There's also a pin required for:
+# The buzzer, and motion sensor. Also, there's a camera
+class AlarmSystem(RemoteAbstract):
+    def __init__(self, dic):
+        if __debug__:
+            super().__init__(dic, Button)
+        else:
+            super().__init__(dic)
+
+        self.keep_on = dic["keep_on"]
+
+    def input(self, data):
+        super().input(data)
+
+        self.keep_on = data["keep_on"]
+        if self.keep_on:
+            pass
+        else:
+            pass
+
+    def change_pin(self, pin):
+        self.change_pin(pin)
+
+    def close(self, remote=None):
+        if __debug__:
+            self.device.close()
+
+    class Form(RemoteAbstract.Form):
+        v_b = RemoteAbstract.Form.blank_validator
+        v_n = RemoteAbstract.Form.num_validator
+
+        pin_buzzer = MinMaxIntegerField(label="GPIO pin for Buzzer",
+                                        min=MIN_GPIO, max=MAX_GPIO,
+                                        validators=[v_b, v_n])
+
+        pin_motion = MinMaxIntegerField(label="GPIO pin for Motion Sensor",
+                                        min=MIN_GPIO, max=MAX_GPIO,
+                                        validators=[v_b, v_n])
+
+        keep_on = BooleanField("Enable Away From Home?")
+        emails = TextField(label="Enter Email Adresses Separated by Commas",
+                           validators=[])
+
+        def validate_emails(form, field):
+            import re
+            regex = "[^@]+@[^@]+\.[^@]+"
+            for email in field.data.split(","):
+                if re.search(regex, email.replace(" ", "")) is None:
+                    raise validators.ValidationError("Unable to validate" +
+                                                     " email")
+
+    @classmethod
+    def to_dic(cls, form):
+        dic = super().to_dic(form)
+        dic["pin_buzzer"] = form.pin_buzzer.data
+        dic["pin_motion"] = form.pin_motion.data
+
+        dic["keep_on"] = form.keep_on.data
+        dic["motion"] = None
+        dic["photo_toggle"] = False
+
+        dic["emails"] = form.emails.data
+
+        return dic

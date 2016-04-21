@@ -24,21 +24,24 @@
         {% endif %}
     {% endwith %}
 
-    <form method=post action="">
-        {% for f in form %}
-            <div class="row">
-                <div class="col s12 m10">
-                    {% if f.type == "BooleanField"%}
-                    <p> {{f.label.text}} </p>
-                    <div class="switch">
-                        <label> Off {{f}} <span class="lever">.</span> On </label>
+    {% block forms %}
+        <form method=post action="">
+            {% set var="123" %}
+            {% for f in form %}
+                <div class="row">
+                    <div class="col s12 m10">
+                        {% if f.type == "BooleanField"%}
+                            <p> {{f.label.text}} </p>
+                            <div class="switch">
+                                <label> Off {{f}} <span class="lever">.</span> On </label>
+                            </div>
+                        {% else %}
+                            {{f(placeholder=f.label.text, class="validate", value=default_text)}}
+                        {% endif %}
                     </div>
-                    {% else %}
-                    {{f(placeholder=f.label.text, class="validate")}}
-                    {% endif %}
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+    {% endblock forms %}
 
         {% block edit_button %}{% endblock %}
         <div class="row">

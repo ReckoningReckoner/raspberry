@@ -19,7 +19,10 @@ class Remote():
         self.query = Query()
         print("Loaded Database")
 
-        self.valid_types = ["SimpleOutput", "MotionSensor", "Switch"]
+        self.valid_types = ["SimpleOutput",
+                            "MotionSensor",
+                            "Switch",
+                            "AlarmSystem"]
         self.remotes = {}
         for remote in self.to_dict():
             self._add_locally(remote)
@@ -155,9 +158,7 @@ class Remote():
     # change pin locally
     def _change_pin_locally(self, pin, dic):
         pin = int(pin)  # the old pin
-
         self.remotes[int(dic["pin"])] = self.remotes.pop(pin)
-        self.remotes[int(dic["pin"])].change_pin(int(dic["pin"]))
 
     # Updates database
     def update_remote(self, pin, dic):
