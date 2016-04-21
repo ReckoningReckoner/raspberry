@@ -167,12 +167,11 @@ class Remote():
         if "pin" in dic and int(dic["pin"]) != pin:  # switching pins
             try:
                 self._check_for_duplicate_pin(dic=dic)
+                self._change_pin_locally(pin, dic)
             except ValueError as e:
                 raise e
 
         self.db.update(dic, self.query["pin"] == pin) 
-        if "pin" in dic:
-            self._change_pin_locally(pin, dic)
 
     # Returns value from db by pin
     def get_remote_data(self, pin):

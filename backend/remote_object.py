@@ -41,6 +41,7 @@ class RemoteAbstract():
         self.name = dic["name"]
 
     def change_pin(self, new_pin):
+        self.close()
         self.pin = new_pin
 
     # Gets information from database
