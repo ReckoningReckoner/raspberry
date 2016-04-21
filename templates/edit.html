@@ -9,6 +9,16 @@
     <h3> Editing {{remote["name"]}} </h3>
 {% endblock %}
 
+{% block edit_button %}
+    <div class="row">
+        <div class="col s12">
+            <button class="modal-trigger btn red lighten-2 waves-effect"
+                data-target={{remote['pin']}} name=edit >
+                Delete Remote 
+            </button>
+        </div>
+    </div>
+{% endblock %}
 
 {% block list %}
     <a href="/edit/{{remote['pin']}}"
@@ -19,11 +29,6 @@
     <button class="btn red lighten-2 waves-efect"
             value={{remote['pin']}}
             name=edit>Save Changes
-    </button>
-
-    <button class="modal-trigger btn red lighten-2 waves-effect"
-            data-target={{remote['pin']}} name=edit >
-            Delete Remote 
     </button>
 
     <!-- delete confirmation box -->
