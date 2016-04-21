@@ -36,9 +36,10 @@ class MinMaxIntegerField(IntegerField):
 
 
 class RemoteAbstract():
-    def __init__(self, dic, Type=None):
+    def __init__(self, dic, Type=None, no_type=False):
         self.pin = dic["pin"]
-        if __debug__:
+        self.no_type = no_type
+        if __debug__ or no_type:
             if Type is None:
                 Type = GPIODevice
             try:
@@ -69,9 +70,9 @@ class RemoteAbstract():
             self.pin = data["pin"]
             self.change_pin(self.pin)
 
-    # Modifies database
-    def output(self, database, query):
-        pass
+    def output(self, database, query, data=None):
+        if data is not None:
+            database.update(data, query["pin"] == self.pin)
 
     class Form(wtforms.Form):
         name = TextField("Name", [validators.Required(message="Name must not" +
@@ -110,11 +111,17 @@ class SimpleOutput(RemoteAbstract):
 
     def input(self, data):
         super().input(data)
-        if __debug__:
+        if __debug__ and "keep_on" in data:
             if data["keep_on"]:
-                self.device.on()
+                self.on()
             else:
-                self.device.off()
+                self.off()
+
+    def on(self):
+        self.device.on()
+
+    def off(self):
+        self.device.off()
 
     class Form(RemoteAbstract.Form):
         keep_on = BooleanField("Initial State")
@@ -148,7 +155,7 @@ class SimpleInput(RemoteAbstract):
         if data is None:
             data = {"data": self.data}
 
-        database.update({"data": self.data}, query["pin"] == self.pin)
+        super().output(database, query, data)
 
     @classmethod
     def to_dic(cls, form):
@@ -194,27 +201,46 @@ class Switch(SimpleInput):
 class AlarmSystem(RemoteAbstract):
     def __init__(self, dic):
         if __debug__:
-            super().__init__(dic, Button)
+            super().__init__(dic, Button, no_type=True)
+            self.switch = Switch({"pin": dic["pin"]})
+            self.buzzer = SimpleInput({"pin": dic["pin_buzzer"]})
+            self.motion = MotionSensor({"pin": dic["pin_motion"]})
         else:
             super().__init__(dic)
 
         self.keep_on = dic["keep_on"]
 
     def input(self, data):
-        super().input(data)
+        if __debug__:
+            self.switch.input({"pin": data["pin"]})
+            self.buzzer.input({"pin": data["pin_buzzer"]})
+            self.motion.input({"pin": data["pin_motion"]})
 
-        self.keep_on = data["keep_on"]
-        if self.keep_on:
-            pass
-        else:
-            pass
+            self.keep_on = data["keep_on"]
+            if self.keep_on:
+                if self.switch.is_active():  # door is closed
+                    self.buzzer.off()
+                else:
+                    self.buzzer.on()
+            else:
+                self.buzzer.off()
+
+    def output(self, database, query):
+        if __debug__:
+            dic = {}
+            dic["door_open"] = not self.switch.is_active()
+            dic["motion"] = self.motion.is_active()
+
+            super().output(database, query, dic)
 
     def change_pin(self, pin):
         self.change_pin(pin)
 
-    def close(self, remote=None):
+    def close(self):
         if __debug__:
             self.device.close()
+            self.buzzer.close()
+            self.motion.close()
 
     class Form(RemoteAbstract.Form):
         v_b = RemoteAbstract.Form.blank_validator
@@ -247,6 +273,8 @@ class AlarmSystem(RemoteAbstract):
         dic["pin_motion"] = form.pin_motion.data
 
         dic["keep_on"] = form.keep_on.data
+
+        dic["door_open"] = None
         dic["motion"] = None
         dic["photo_toggle"] = False
 
