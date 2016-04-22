@@ -6,7 +6,7 @@
 import wtforms
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
-
+import time
 if __debug__:  # if not editing from the raspberry pi
     import gpiozero as gpio
     from gpiozero import OutputDevice
@@ -63,7 +63,7 @@ class RemoteAbstract(RemoteInterface):
     def __init__(self, dic, Type=None, no_type=False):
         self.pin = dic["pin"]
         self.no_type = no_type
-        if __debug__ or not no_type:
+        if __debug__ and not no_type:
             if Type is None:
                 Type = GPIODevice
             try:
@@ -190,7 +190,6 @@ class MotionSensor(SimpleInput):
             super().__init__(dic)
 
     def output(self, database, query):
-        import time
         if self.is_active():
             self.data = int(time.time())
 
@@ -230,6 +229,8 @@ class AlarmSystem(RemoteInterface):
                 raise e
 
         self.keep_on = dic["keep_on"]
+        self.motion_detected = False
+        self.door_open = False
 
     def input(self, data):
         if __debug__:
@@ -238,20 +239,21 @@ class AlarmSystem(RemoteInterface):
             self.motion.input({"pin": data["pin_motion"]})
 
             self.keep_on = data["keep_on"]
-            if self.keep_on:  # away from home mode enabled
-                if self.switch.is_active():  # door is closed
-                    self.buzzer.off()
-                else:
-                    self.buzzer.on()
+            self.door_open = not self.switch.is_active()
+            self.motion_detected = self.motion.is_active()
+
+            # Door is closed with switch is closed
+            if self.keep_on and self.door_open():
+                self.buzzer.on()
             else:
                 self.buzzer.off()
 
     def output(self, database, query):
         if __debug__:
             dic = {}
-            dic["door_open"] = not self.switch.is_active()
-            motion_detected = self.motion.is_active()
-            dic["motion"] = motion_detected
+            dic["door_open"] = self.door_open
+            if self.motion_detected:
+                dic["motion"] = time.strftime("%c")
 
             database.update(dic, query["pin"] == self.pin)
 
@@ -269,8 +271,8 @@ class AlarmSystem(RemoteInterface):
         v_n = RemoteAbstract.Form.num_validator
 
         pin = MinMaxIntegerField(label="GPIO pin for Switch",
-                                        min=MIN_GPIO, max=MAX_GPIO,
-                                        validators=[v_b, v_n])
+                                       min=MIN_GPIO, max=MAX_GPIO,
+                                       validators=[v_b, v_n])
 
         pin_buzzer = MinMaxIntegerField(label="GPIO pin for Buzzer",
                                         min=MIN_GPIO, max=MAX_GPIO,
@@ -280,9 +282,10 @@ class AlarmSystem(RemoteInterface):
                                         min=MIN_GPIO, max=MAX_GPIO,
                                         validators=[v_b, v_n])
 
-        keep_on = BooleanField("Enable Away From Home?")
-        emails = TextField(label="Enter Email Adresses Separated by Commas",
+        emails = TextField(label="Email Adresses Separated by Commas",
                            validators=[])
+
+        keep_on = BooleanField("Enable Away From Home?")
 
         def validate_emails(form, field):
             if len(field.data) == 0:
@@ -293,7 +296,8 @@ class AlarmSystem(RemoteInterface):
             for email in field.data.split(","):
                 if re.search(regex, email.replace(" ", "")) is None:
                     raise validators.ValidationError("Unable to validate" +
-                                                     " email")
+                                                     " email, maybe a" +
+                                                     " typo?")
 
     @classmethod
     def to_dic(cls, form):
@@ -308,6 +312,6 @@ class AlarmSystem(RemoteInterface):
         dic["motion"] = None
         dic["photo_toggle"] = False
 
-        dic["emails"] = form.emails.data
+        dic["emails"] = form.emails.data.replace(" ", "")
 
         return dic
