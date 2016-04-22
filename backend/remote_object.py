@@ -246,7 +246,7 @@ class AlarmSystem(RemoteInterface):
             self.motion_detected = self.motion.is_active()
 
             # Door is closed with switch is closed
-            if self.keep_on and self.door_open():
+            if self.keep_on and self.door_open:
                 self.buzzer.on()
             else:
                 self.buzzer.off()
