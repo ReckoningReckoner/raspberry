@@ -4,9 +4,12 @@
 
 
 import wtforms
+import re
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 import time
+from backend.camera import take_photo  # hard coded webcam
+
 if __debug__:  # if not editing from the raspberry pi
     import gpiozero as gpio
     from gpiozero import OutputDevice
@@ -254,6 +257,7 @@ class AlarmSystem(RemoteInterface):
             dic["door_open"] = self.door_open
             if self.motion_detected:
                 dic["motion"] = time.strftime("%c")
+                take_photo()
 
             database.update(dic, query["pin"] == self.pin)
 
@@ -291,7 +295,6 @@ class AlarmSystem(RemoteInterface):
             if len(field.data) == 0:
                 return
 
-            import re
             regex = "[^@]+@[^@]+\.[^@]+"
             for email in field.data.split(","):
                 if re.search(regex, email.replace(" ", "")) is None:
