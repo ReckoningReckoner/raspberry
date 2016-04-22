@@ -235,6 +235,7 @@ class AlarmSystem(RemoteInterface):
         self.keep_on = dic["keep_on"]
         self.motion_detected = False
         self.door_open = False
+        self.photo_toggle = dic["photo_toggle"]
 
     def input(self, data):
         if __debug__:
@@ -245,6 +246,10 @@ class AlarmSystem(RemoteInterface):
             self.keep_on = data["keep_on"]
             self.door_open = not self.switch.is_active()
             self.motion_detected = self.motion.is_active()
+
+            if data["photo_toggle"] != self.photo_toggle:
+                take_photo()
+                self.photo_toggle = data["photo_toggle"]
 
             # Door is closed with switch is closed
             if self.keep_on and self.door_open:
