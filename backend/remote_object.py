@@ -8,11 +8,11 @@ from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 
 if __debug__:  # if not editing from the raspberry pi
+    import gpiozero as gpio
     from gpiozero import OutputDevice
     from gpiozero import GPIODevice
     from gpiozero import MotionSensor as Motion
     from gpiozero import Button
-    from gpiozero import GPIOPinInUse
 else:
     print("DEBUG MODE IS ON, HARDWARE WILL NOT WORK")
 
@@ -30,22 +30,46 @@ class MinMaxIntegerField(IntegerField):
         self.min = min
         self.max = max
 
+# Make sure all subclasses have these methods
+
+
+class RemoteInterface():
+    def close(self):
+        raise NotImplementedError
+
+    # Gets information from database
+    def input(self, data):
+        raise NotImplementedError
+
+    def output(self, database, query):
+        raise NotImplementedError
+
+    class Form(wtforms.Form):
+        pass
+
+    @classmethod
+    def to_dic(cls, form):
+        return {
+                "pin": form.pin.data,
+                "name": form.name.data,
+                "type": cls.__name__
+                }
 
 # Abstract remote class. All Remotes should have a primary pin
 # number and a name
 
 
-class RemoteAbstract():
+class RemoteAbstract(RemoteInterface):
     def __init__(self, dic, Type=None, no_type=False):
         self.pin = dic["pin"]
         self.no_type = no_type
-        if __debug__ or no_type:
+        if __debug__ or not no_type:
             if Type is None:
                 Type = GPIODevice
             try:
                 self.Type = Type
                 self.device = self.Type(self.pin)
-            except GPIOPinInUse as e:
+            except gpio.GPIOZeroError as e:
                 raise ValueError(str(e))
             except Exception as e:
                 raise e
@@ -54,12 +78,12 @@ class RemoteAbstract():
         if __debug__:
             self.device.close()
 
-    def change_pin(self, new_pin):
+    def _change_pin(self, new_pin):
         self.close()
         if __debug__:
             try:
                 self.device = self.Type(self.pin)
-            except GPIOPinInUse as e:
+            except gpio.GPIOZeroError as e:
                 raise ValueError(str(e))
             except Exception as e:
                 raise e
@@ -68,7 +92,7 @@ class RemoteAbstract():
     def input(self, data):
         if self.pin != data["pin"]:
             self.pin = data["pin"]
-            self.change_pin(self.pin)
+            self._change_pin(self.pin)
 
     def output(self, database, query, data=None):
         if data is not None:
@@ -89,14 +113,6 @@ class RemoteAbstract():
 
         pin = MinMaxIntegerField(label="GPIO pin", min=MIN_GPIO, max=MAX_GPIO,
                                  validators=[blank_validator, num_validator])
-
-    @classmethod
-    def to_dic(cls, form):
-        return {
-                "pin": form.pin.data,
-                "name": form.name.data,
-                "type": cls.__name__
-                }
 
 
 # For devices that only have an on/off state
@@ -198,15 +214,20 @@ class Switch(SimpleInput):
 
 # The "pin" is for the switch. There's also a pin required for:
 # The buzzer, and motion sensor. Also, there's a camera
-class AlarmSystem(RemoteAbstract):
+
+
+class AlarmSystem(RemoteInterface):
     def __init__(self, dic):
         if __debug__:
-            super().__init__(dic, Button, no_type=True)
-            self.switch = Switch({"pin": dic["pin"]})
-            self.buzzer = SimpleInput({"pin": dic["pin_buzzer"]})
-            self.motion = MotionSensor({"pin": dic["pin_motion"]})
-        else:
-            super().__init__(dic)
+            try:
+                self.pin = dic["pin"]
+                self.switch = Switch({"pin": dic["pin"]})
+                self.buzzer = SimpleOutput({"pin": dic["pin_buzzer"]})
+                self.motion = MotionSensor({"pin": dic["pin_motion"]})
+            except gpio.GPIOZeroError as e:
+                raise ValueError(str(e))
+            except Exception as e:
+                raise e
 
         self.keep_on = dic["keep_on"]
 
@@ -217,7 +238,7 @@ class AlarmSystem(RemoteAbstract):
             self.motion.input({"pin": data["pin_motion"]})
 
             self.keep_on = data["keep_on"]
-            if self.keep_on:
+            if self.keep_on:  # away from home mode enabled
                 if self.switch.is_active():  # door is closed
                     self.buzzer.off()
                 else:
@@ -229,12 +250,10 @@ class AlarmSystem(RemoteAbstract):
         if __debug__:
             dic = {}
             dic["door_open"] = not self.switch.is_active()
-            dic["motion"] = self.motion.is_active()
+            motion_detected = self.motion.is_active()
+            dic["motion"] = motion_detected
 
-            super().output(database, query, dic)
-
-    def change_pin(self, pin):
-        self.change_pin(pin)
+            database.update(dic, query["pin"] == self.pin)
 
     def close(self):
         if __debug__:
@@ -242,9 +261,16 @@ class AlarmSystem(RemoteAbstract):
             self.buzzer.close()
             self.motion.close()
 
-    class Form(RemoteAbstract.Form):
+    class Form(wtforms.Form):
+        name = TextField("Name", [validators.Required(message="Name must not" +
+                         " be left blank")])
+
         v_b = RemoteAbstract.Form.blank_validator
         v_n = RemoteAbstract.Form.num_validator
+
+        pin = MinMaxIntegerField(label="GPIO pin for Switch",
+                                        min=MIN_GPIO, max=MAX_GPIO,
+                                        validators=[v_b, v_n])
 
         pin_buzzer = MinMaxIntegerField(label="GPIO pin for Buzzer",
                                         min=MIN_GPIO, max=MAX_GPIO,
@@ -259,6 +285,9 @@ class AlarmSystem(RemoteAbstract):
                            validators=[])
 
         def validate_emails(form, field):
+            if len(field.data) == 0:
+                return
+
             import re
             regex = "[^@]+@[^@]+\.[^@]+"
             for email in field.data.split(","):
@@ -269,6 +298,7 @@ class AlarmSystem(RemoteAbstract):
     @classmethod
     def to_dic(cls, form):
         dic = super().to_dic(form)
+
         dic["pin_buzzer"] = form.pin_buzzer.data
         dic["pin_motion"] = form.pin_motion.data
 
