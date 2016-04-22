@@ -226,6 +226,7 @@ class AlarmSystem(RemoteInterface):
                 self.switch = Switch({"pin": dic["pin"]})
                 self.buzzer = SimpleOutput({"pin": dic["pin_buzzer"]})
                 self.motion = MotionSensor({"pin": dic["pin_motion"]})
+                self.last_picture_taken = int(time.time())
             except gpio.GPIOZeroError as e:
                 raise ValueError(str(e))
             except Exception as e:
@@ -248,6 +249,10 @@ class AlarmSystem(RemoteInterface):
             # Door is closed with switch is closed
             if self.keep_on and self.door_open:
                 self.buzzer.on()
+                # take photo every three seconds if door is open
+                if int(time.time()) - self.last_picture_taken > 3:
+                    take_photo()
+                    last_picture_taken = int(time.time())
             else:
                 self.buzzer.off()
 
