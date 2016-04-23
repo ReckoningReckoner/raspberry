@@ -8,7 +8,7 @@ import re
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 import time
-from backend.camera import take_photo  # hard coded webcam
+from backend.camera import take_photo, get_newest_photo  # hard coded webcam
 
 if __debug__:  # if not editing from the raspberry pi
     import gpiozero as gpio
@@ -225,6 +225,7 @@ class AlarmSystem(RemoteInterface):
                 self.switch = Switch({"pin": dic["pin"]})
                 self.buzzer = SimpleOutput({"pin": dic["pin_buzzer"]})
                 self.motion = MotionSensor({"pin": dic["pin_motion"]})
+                self.last_picture_taken = int(time.time())
             except gpio.GPIOZeroError as e:
                 raise ValueError(str(e))
             except Exception as e:
@@ -233,6 +234,7 @@ class AlarmSystem(RemoteInterface):
         self.keep_on = dic["keep_on"]
         self.motion_detected = False
         self.door_open = False
+        self.photo_toggle = dic["photo_toggle"]
 
     def input(self, data):
         if __debug__:
@@ -244,9 +246,17 @@ class AlarmSystem(RemoteInterface):
             self.door_open = not self.switch.is_active()
             self.motion_detected = self.motion.is_active()
 
+            if data["photo_toggle"] != self.photo_toggle:
+                take_photo()
+                self.photo_toggle = data["photo_toggle"]
+
             # Door is closed with switch is closed
             if self.keep_on and self.door_open:
                 self.buzzer.on()
+                # take photo every three seconds if door is open
+                if int(time.time()) - self.last_picture_taken > 3:
+                    take_photo()
+                    last_picture_taken = int(time.time())
             else:
                 self.buzzer.off()
 
@@ -258,6 +268,7 @@ class AlarmSystem(RemoteInterface):
                 dic["motion"] = time.strftime("%c")
                 take_photo()
 
+            dic["photo"] = get_newest_photo()
             database.update(dic, query["pin"] == self.pin)
 
     def close(self):
@@ -313,6 +324,7 @@ class AlarmSystem(RemoteInterface):
         dic["door_open"] = None
         dic["motion"] = None
         dic["photo_toggle"] = False
+        dic["photo"] = ""
 
         dic["emails"] = form.emails.data.replace(" ", "")
 
