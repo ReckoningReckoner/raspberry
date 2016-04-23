@@ -22,7 +22,6 @@ else:
 MIN_GPIO = 4
 MAX_GPIO = 26
 
-
 # Has min max attributes so javascript can check if a pin is
 # valid or not
 
@@ -246,7 +245,7 @@ class AlarmSystem(RemoteInterface):
             self.motion_detected = self.motion.is_active()
 
             # Door is closed with switch is closed
-            if self.keep_on and self.door_open():
+            if self.keep_on and self.door_open:
                 self.buzzer.on()
             else:
                 self.buzzer.off()
