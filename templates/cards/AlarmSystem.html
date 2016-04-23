@@ -2,7 +2,7 @@
 {% extends 'cards/base_card.html' %}
 {% block image %}
 <div class="card-image waves-effect waves-block waves-light">
-        <img src="{{url_for('static', filename='example.jpg')}}" alt="Image preview...">
+    <img src="{{url_for('static', filename=remote["photo"])}}" alt="Image preview...">
 </div>
 
 {% endblock %}
@@ -20,6 +20,14 @@
 
 {% block long_msg %}
     <p>
+        {% if remote["keep_on"] %}
+            <a class="green-text lighten-2">away from home</a>
+        {% else %}
+            <a class="amber-text accent-4">passive</a>
+        {% endif %}
+        mode
+    </p>
+    <p>
     the door is
         {% if remote["door_open"] %}
             <a class="amber-text accent-4">open</a>
@@ -34,19 +42,6 @@
     <p> buzzer is connected to gpio pin {{remote["pin_buzzer"]}} </p>
     <p> motion detector is connected to gpio pin {{remote["pin_motion"]}} </p>
     <p> switch is connected to gpio pin {{remote["pin"]}} </p>
-
-    <p>
-
-    <p>
-        {% if remote["keep_on"] %}
-            <a class="green-text lighten-2">away from home</a>
-        {% else %}
-            <a class="amber-text accent-4">passive</a>
-        {% endif %}
-        mode
-    </p>
-
-
 {% endblock %}
 
 {% block button %}

@@ -48,7 +48,7 @@ class Remote():
     # Debug output
     def _show_debug_output(self):
         current_time = int(time())
-        debug = current_time % 2 == 0
+        debug = current_time % 5 == 0
         if debug:
             print("Time is: ", current_time, "\n")
             print("size of db:", len(self.db))

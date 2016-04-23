@@ -2,7 +2,7 @@ import subprocess
 import time
 from os import listdir
 
-directory = "static/photos"
+directory = "/home/pi/raspberry-automation/static/photos"
 max_album_size = 20
 
 
@@ -13,11 +13,11 @@ def take_photo():
         for f in files[0:len(files)-max_album_size]:
             subprocess.call(["rm", directory + "/" + f])
 
-    subprocess.call(["fswebcam", directory + "/" + filename + ".jpg"])
+    subprocess.call(["fswebcam", "-r 720x480", directory + "/" + filename + ".jpg"])
 
 
 def get_newest_photo():
-    return "photos" + sorted(listdir(directory))[-1]
+    return "photos/" + sorted(listdir(directory))[-1]
 
 if __name__ == "__main__":
     take_photo()
