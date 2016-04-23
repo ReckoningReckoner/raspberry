@@ -2,8 +2,9 @@
 {% extends 'cards/base_card.html' %}
 {% block image %}
 <div class="card-image waves-effect waves-block waves-light">
-    <img class="activator" src="http://images.all-free-download.com/images/graphiclarge/daisy_pollen_flower_220533.jpg">
+        <img src="{{url_for('static', filename='example.jpg')}}" alt="Image preview...">
 </div>
+
 {% endblock %}
 
 {% block short_msg %}

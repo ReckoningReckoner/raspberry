@@ -256,7 +256,7 @@ class AlarmSystem(RemoteInterface):
                 # take photo every three seconds if door is open
                 if int(time.time()) - self.last_picture_taken > 3:
                     take_photo()
-                    last_picture_taken = int(time.time())
+                    self.last_picture_taken = int(time.time())
             else:
                 self.buzzer.off()
 
