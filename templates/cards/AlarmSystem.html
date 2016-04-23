@@ -1,5 +1,11 @@
 <!doctype html>
 {% extends 'cards/base_card.html' %}
+{% block image %}
+<div class="card-image waves-effect waves-block waves-light">
+    <img class="activator" src="http://images.all-free-download.com/images/graphiclarge/daisy_pollen_flower_220533.jpg">
+</div>
+{% endblock %}
+
 {% block short_msg %}
     <p>
         {% if remote["keep_on"] %}

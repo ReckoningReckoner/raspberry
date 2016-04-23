@@ -8,7 +8,7 @@ import re
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 import time
-from backend.camera import take_photo  # hard coded webcam
+from backend.camera import take_photo, get_newest_photo  # hard coded webcam
 
 if __debug__:  # if not editing from the raspberry pi
     import gpiozero as gpio
@@ -269,6 +269,7 @@ class AlarmSystem(RemoteInterface):
                 dic["motion"] = time.strftime("%c")
                 take_photo()
 
+            dic["photo"] = get_newest_photo()
             database.update(dic, query["pin"] == self.pin)
 
     def close(self):
@@ -324,6 +325,7 @@ class AlarmSystem(RemoteInterface):
         dic["door_open"] = None
         dic["motion"] = None
         dic["photo_toggle"] = False
+        dic["photo"] = ""
 
         dic["emails"] = form.emails.data.replace(" ", "")
 
