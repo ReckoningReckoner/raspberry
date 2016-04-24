@@ -8,9 +8,12 @@ from flask import session
 from threading import Thread
 from backend.remote import Remote
 import traceback
+import bcrypt
+import json
 
 app = Flask(__name__)
-users = {'username': {'password': 'password'}}
+{'bigbrother': {'hash': b'$2b$12$s5Jq12SE71MTTVH8TRn53OkdSCOOI8zjkk1DufZogUKIKrRZfxaDO'} }
+users = 
 
 
 # ===== For logging in an out of a page ========
@@ -20,7 +23,9 @@ def login():
     if request.method == "POST":
         username = request.form['username']
         if username in users and \
-           request.form['password'] == users[username]['password']:
+            bcrypt.hashpw(bytes(request.form['password']),
+                          users[username]['hash']) == \
+                users[username]['hash']:
 
             session['logged_in'] = request.form['username']
             return redirect(url_for('index'))

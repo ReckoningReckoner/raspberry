@@ -2,4 +2,4 @@ flask
 wtforms
 gpiozero
 tinydb
-flask-login
+bcrypt

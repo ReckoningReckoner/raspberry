@@ -4,10 +4,10 @@
 
 
 import wtforms
-import re
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 import time
+import re
 from backend.camera import take_photo, get_newest_photo  # hard coded webcam
 
 if __debug__:  # if not editing from the raspberry pi
