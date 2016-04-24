@@ -14,8 +14,6 @@ try:
     subprocess.check_output(["which", "fswebcam"])
 except subprocess.CalledProcessError:
     print("Error, fswebcam not installed")
-    print("Exiting program")
-    sys.exit(1)
 
 
 def take_photo():
