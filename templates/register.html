@@ -1,21 +1,21 @@
-<!DOCTYPE html>
+<!doctype html>
 {% extends 'breadcrumb.html' %}
 
 {% block head %}
-    <title> Add {{remote_type}} </title>
+    <title> add {{remote_type}} </title>
 {% endblock %}
 
 {% block list %}
-    <a href="/new/{{remote_type}}" class="breadcrumb hide-on-small-only">Add {{ remote_type}}</a>
+    <a href="/new/{{remote_type}}" class="breadcrumb hide-on-small-only">add {{ remote_type}}</a>
 {% endblock %}
 
 
 {% block body %}
 
     {% block title %}
-        <h3> Create new a new remote </h3>
+        <h3> create new a new remote </h3>
     {% endblock %}
-    <!-- Display errors -->
+    <!-- display errors -->
     {% with error = get_flashed_messages() %}
         {% if error %}
             {% for e in error %}
@@ -32,7 +32,7 @@
                         <p> {{f.label.text}} </p>
                         {% if f.type == "BooleanField"%}
                             <div class="switch">
-                                <label> Off {{f}} <span class="lever">.</span> On </label>
+                                <label> off {{f}} <span class="lever">.</span> on </label>
                             </div>
                         {% else %}
                             {% if remote is defined %}
@@ -53,9 +53,9 @@
         {% block edit_button %}{% endblock %}
         <div class="row">
             <div class="col s12">
-                <a href="/" class="red lighten-2 waves-effect btn">Go Back</a>
+                <a href="/" class="red lighten-2 waves-effect btn">go back</a>
                 {% block button %}
-                    <button class="red lighten-2 waves-effect btn">Create New Remote</button>
+                    <button class="red lighten-2 waves-effect btn">create new remote</button>
                 {% endblock %}
             </div>
         </div>
