@@ -9,21 +9,20 @@ from threading import Thread
 from backend.remote import Remote
 import traceback
 import bcrypt
-import json
+import base64
+import ast
 
 app = Flask(__name__)
-{'bigbrother': {'hash': b'$2b$12$s5Jq12SE71MTTVH8TRn53OkdSCOOI8zjkk1DufZogUKIKrRZfxaDO'} }
-users = 
-
 
 # ===== For logging in an out of a page ========
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == "POST":
         username = request.form['username']
         if username in users and \
-            bcrypt.hashpw(bytes(request.form['password']),
+            bcrypt.hashpw(bytes(request.form['password'], 'utf-8'),
                           users[username]['hash']) == \
                 users[username]['hash']:
 
@@ -158,4 +157,12 @@ if __name__ == "__main__":
     r_thread.start()
 
     app.config["SECRET_KEY"] = "I love gloria <3"
+
+    try:
+        data = open("stuff").readline().strip()
+        bytes_ = base64.b64decode(data)
+        users = ast.literal_eval(bytes_.decode("utf-8"))
+    except IOError:
+        print("Error while loading")
+
     app.run(debug=True, host='0.0.0.0', use_reloader=False)
