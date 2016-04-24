@@ -19,12 +19,11 @@ def new_Remote(remote_type):
         return redirect(url_for("new_RemoteOption"))
 
     if request.method == "POST":
-
         try:
             if not form.validate():  # form not filled out properly
                 for error in form.errors.values():
                     flash("".join(error))
-                raise ValueError("Unable to validate form")
+                raise ValueError
 
             r.add(Remote_Class.to_dic(form))
             return redirect(url_for("index"))  # success!
@@ -32,16 +31,17 @@ def new_Remote(remote_type):
         except ValueError as e:  # display error
             flash(e)
             return render_template('register.html', form=form,
-                                   remote_type=remote_type)
-        except Exception as e:
+                                   remote_type=remote_type,
+                                   remote=Remote_Class.to_dic(form))
+        except Exception as e:  # Usually an internal error
             flash(traceback.format_exc())
             flash(e)
             return render_template('register.html', form=form,
-                                   remote_type=remote_type)
+                                   remote_type=remote_type,
+                                   remote=Remote_Class.to_dic(form))
 
-    elif request.method == "GET":
-        return render_template('register.html', form=form,
-                               remote_type=remote_type)
+    return render_template('register.html', form=form,
+                           remote_type=remote_type)
 
 
 @app.route("/edit/<pin>", methods=["GET", "POST"])
@@ -97,7 +97,10 @@ def index():
     if request.method == "POST":
         if "toggle" in request.form:
             pin = request.form["toggle"]
-            r.toggle(int(pin))
+            r.toggle(int(pin), "keep_on")
+        elif "photo_toggle" in request.form:
+            pin = request.form["photo_toggle"]
+            r.toggle(int(pin), "photo_toggle")
 
     return render_template('home.html',
                            remotes=r.to_dict(),

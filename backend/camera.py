@@ -1,18 +1,40 @@
 import subprocess
 import time
+import os
 from os import listdir
+import sys
 
-directory = "photos"
-filename = str(int(time.time()))
+directory = "/home/pi/raspberry-automation/static/photos"
 max_album_size = 20
 
+if not os.path.isdir(directory):
+    subprocess.call(["mkdir", directory])
+
+try:
+    subprocess.check_output(["which", "fswebcam"])
+except subprocess.CalledProcessError:
+    print("Error, fswebcam not installed")
+    print("Exiting program")
+    sys.exit(1)
+
+
 def take_photo():
-    files = listdir(directory)
+    filename = str(int(time.time()))
+    files = sorted(listdir(directory))
     if len(files) > max_album_size:
         for f in files[0:len(files)-max_album_size]:
             subprocess.call(["rm", directory + "/" + f])
 
-    subprocess.call(["fswebcam", directory + "/" + filename + ".jpg"])
+    subprocess.call(["fswebcam", "-r 720x480",
+                     directory + "/" + filename + ".jpg"])
+
+
+def get_newest_photo():
+    file_names = sorted(listdir(directory))
+    if len(file_names) == 0:
+        return ""
+
+    return "photos/" + file_names[-1]
 
 if __name__ == "__main__":
     take_photo()

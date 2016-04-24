@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <title> Home Automation </title>
+    <title> home automation </title>
 {% endblock %}
 
 {% block navbar %}
@@ -13,7 +13,7 @@
                     <li>
                         <a data-activates='new_remote_type'
                             class="dropdown-button white-text waves-effect btn-flat">
-                            Add New Remote
+                            add new remote
                         </a>
                     </li>
                 </ul>
@@ -26,7 +26,7 @@
 {% block body %}
     {% if remotes|length == 0 %} <!-- No remote message -->
         <div class="row">
-            <h5 class="center"> You have no remotes </h5>
+            <h5 class="center"> you have no remotes </h5>
         </div>
     {% else %} <!-- new remote button -->
         <div class="row">
