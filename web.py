@@ -1,59 +1,69 @@
 # This module is the web server, and communictates to the remote.py module
 
+from flask import Flask, request
+from flask import flash, redirect
+from flask import url_for, render_template
+from flask import session
 
-from flask import Flask, request, flash, redirect, url_for, render_template
 from threading import Thread
 from backend.remote import Remote
 import traceback
-import flask.ext.login as flask_login
 
 app = Flask(__name__)
-app.secret_key = "I love Gloria"
-login_manager = flask_login.LoginManager()
-
-users = {'user': {'password': 'pass'}}
+users = {'username': {'password': 'password'}}
 
 
-# ======= FOR LOGGING IN AN AUTHENTICATING USERS ======
-
-
-class User(flask_login.UserMixin):
-    pass
-
-
-@login_manager.user_loader
-def user_loader(username):
-    if username in users:
-        user = User()
-        user.id = username
-        return user
-
-
-@login_manager.request_loader
-def request_loader(request):
-    username = request.form.get('username')
-    if username not in users:
-        user = User()
-        user.id = username
-
-        # DO NOT ever store passwords in plaintext and always compare password
-        # hashes using constant-time comparison!
-        user.is_authenticated = request.form['password'] == \
-            users[username]['password']
-
-        return user
-
+# ===== For logging in an out of a page ========
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # if request.method == "GET":
+    if request.method == "POST":
+        username = request.form['username']
+        if username in users and \
+           request.form['password'] == users[username]['password']:
+
+            session['logged_in'] = request.form['username']
+            return redirect(url_for('index'))
+
+        flash("Incorrect username or password")
+
     return render_template("login.html")
+
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for("login"))
+
+
+# ===== For displaying the front page of the website =====
+
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    if not session.get('logged_in'):
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        if "toggle" in request.form:
+            pin = request.form["toggle"]
+            r.toggle(int(pin), "keep_on")
+        elif "photo_toggle" in request.form:
+            pin = request.form["photo_toggle"]
+            r.toggle(int(pin), "photo_toggle")
+
+    return render_template('home.html',
+                           remotes=r.to_dict(),
+                           valid_types=r.valid_types)
+
 
 # ======= For adding remotes to the database and editing them ======
 
 
 @app.route("/new/<remote_type>", methods=['GET', 'POST'])
 def new_Remote(remote_type):
+    if not session.get('logged_in'):
+        return redirect(url_for("login"))
+
     Remote_Class = r.get_relevant_type(remote_type)
     form = Remote_Class.Form(request.form)
 
@@ -88,6 +98,8 @@ def new_Remote(remote_type):
 
 @app.route("/edit/<pin>", methods=["GET", "POST"])
 def edit(pin):
+    if not session.get('logged_in'):
+        return redirect(url_for("login"))
 
     data = r.get_remote_data(pin)
     if data is None:
@@ -134,28 +146,11 @@ def edit(pin):
                            remote=data)
 
 
-# ===== For displaying the front page of the website =====
-
-@app.route("/", methods=['GET', 'POST'])
-def index():
-    if request.method == "POST":
-        if "toggle" in request.form:
-            pin = request.form["toggle"]
-            r.toggle(int(pin), "keep_on")
-        elif "photo_toggle" in request.form:
-            pin = request.form["photo_toggle"]
-            r.toggle(int(pin), "photo_toggle")
-
-    return render_template('home.html',
-                           remotes=r.to_dict(),
-                           valid_types=r.valid_types)
-
-
 if __name__ == "__main__":
     r = Remote()
     r_thread = Thread(target=r.run)
     r_thread.daemon = True
     r_thread.start()
 
-    # login_manager.init_app(app)
+    app.config["SECRET_KEY"] = "I love gloria <3"
     app.run(debug=True, host='0.0.0.0', use_reloader=False)
