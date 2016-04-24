@@ -5,9 +5,51 @@ from flask import Flask, request, flash, redirect, url_for, render_template
 from threading import Thread
 from backend.remote import Remote
 import traceback
+import flask.ext.login as flask_login
 
 app = Flask(__name__)
 app.secret_key = "I love Gloria"
+login_manager = flask_login.LoginManager()
+
+users = {'user': {'password': 'pass'}}
+
+
+# ======= FOR LOGGING IN AN AUTHENTICATING USERS ======
+
+
+class User(flask_login.UserMixin):
+    pass
+
+
+@login_manager.user_loader
+def user_loader(username):
+    if username in users:
+        user = User()
+        user.id = username
+        return user
+
+
+@login_manager.request_loader
+def request_loader(request):
+    username = request.form.get('username')
+    if username not in users:
+        user = User()
+        user.id = username
+
+        # DO NOT ever store passwords in plaintext and always compare password
+        # hashes using constant-time comparison!
+        user.is_authenticated = request.form['password'] == \
+            users[username]['password']
+
+        return user
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # if request.method == "GET":
+    return render_template("login.html")
+
+# ======= For adding remotes to the database and editing them ======
 
 
 @app.route("/new/<remote_type>", methods=['GET', 'POST'])
@@ -92,6 +134,8 @@ def edit(pin):
                            remote=data)
 
 
+# ===== For displaying the front page of the website =====
+
 @app.route("/", methods=['GET', 'POST'])
 def index():
     if request.method == "POST":
@@ -112,4 +156,6 @@ if __name__ == "__main__":
     r_thread = Thread(target=r.run)
     r_thread.daemon = True
     r_thread.start()
+
+    # login_manager.init_app(app)
     app.run(debug=True, host='0.0.0.0', use_reloader=False)
