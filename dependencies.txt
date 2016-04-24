@@ -2,3 +2,4 @@ flask
 wtforms
 gpiozero
 tinydb
+bcrypt

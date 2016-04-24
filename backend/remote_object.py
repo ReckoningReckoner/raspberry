@@ -4,10 +4,10 @@
 
 
 import wtforms
-import re
 from wtforms import TextField, IntegerField, BooleanField
 from wtforms import validators
 import time
+import re
 from backend.camera import take_photo, get_newest_photo  # hard coded webcam
 
 if __debug__:  # if not editing from the raspberry pi
@@ -101,11 +101,11 @@ class RemoteAbstract(RemoteInterface):
             database.update(data, query["pin"] == self.pin)
 
     class Form(wtforms.Form):
-        name = TextField("Name", [validators.Required(message="Name must not" +
+        name = TextField("name", [validators.Required(message="name must not" +
                          " be left blank")])
 
-        blank_gpio_message = "GPIO pin must not be left blank"
-        wrong_pin_message = "GPIO pin must be between " +\
+        blank_gpio_message = "gpio pin must not be left blank"
+        wrong_pin_message = "gpio pin must be between " +\
                             str(MIN_GPIO) + " - " + str(MAX_GPIO)
 
         blank_validator = validators.Required(message=blank_gpio_message)
@@ -113,7 +113,7 @@ class RemoteAbstract(RemoteInterface):
                                                max=MAX_GPIO,
                                                message=wrong_pin_message)
 
-        pin = MinMaxIntegerField(label="GPIO pin", min=MIN_GPIO, max=MAX_GPIO,
+        pin = MinMaxIntegerField(label="gpio pin", min=MIN_GPIO, max=MAX_GPIO,
                                  validators=[blank_validator, num_validator])
 
 
@@ -278,28 +278,28 @@ class AlarmSystem(RemoteInterface):
             self.motion.close()
 
     class Form(wtforms.Form):
-        name = TextField("Name", [validators.Required(message="Name must not" +
+        name = TextField("name", [validators.Required(message="name must not" +
                          " be left blank")])
 
         v_b = RemoteAbstract.Form.blank_validator
         v_n = RemoteAbstract.Form.num_validator
 
-        pin = MinMaxIntegerField(label="GPIO pin for Switch",
+        pin = MinMaxIntegerField(label="gpio pin for Switch",
                                        min=MIN_GPIO, max=MAX_GPIO,
                                        validators=[v_b, v_n])
 
-        pin_buzzer = MinMaxIntegerField(label="GPIO pin for Buzzer",
+        pin_buzzer = MinMaxIntegerField(label="gpio pin for Buzzer",
                                         min=MIN_GPIO, max=MAX_GPIO,
                                         validators=[v_b, v_n])
 
-        pin_motion = MinMaxIntegerField(label="GPIO pin for Motion Sensor",
+        pin_motion = MinMaxIntegerField(label="gpio pin for Motion Sensor",
                                         min=MIN_GPIO, max=MAX_GPIO,
                                         validators=[v_b, v_n])
 
-        emails = TextField(label="Email Adresses Separated by Commas",
+        emails = TextField(label="email adresses separated by commas",
                            validators=[])
 
-        keep_on = BooleanField("Enable Away From Home?")
+        keep_on = BooleanField("enable away from home?")
 
         def validate_emails(form, field):
             if len(field.data) == 0:
@@ -308,7 +308,7 @@ class AlarmSystem(RemoteInterface):
             regex = "[^@]+@[^@]+\.[^@]+"
             for email in field.data.split(","):
                 if re.search(regex, email.replace(" ", "")) is None:
-                    raise validators.ValidationError("Unable to validate" +
+                    raise validators.ValidationError("unable to validate" +
                                                      " email, maybe a" +
                                                      " typo?")
 

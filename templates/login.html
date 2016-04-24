@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title> Login </title>
+{% endblock %}
+
+{% block navbar %}
+    <nav>
+        <div class="nav-wrapper red lighten-2">
+            <a href="/login" class="brand-logo center">home automation</a>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <h3> login to house</h3>
+    </div>
+
+    {% with error = get_flashed_messages() %}
+        {% if error %}
+            {% for e in error %}
+            <div class="row">
+                <p class="error red-text"> {{e}} </p>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action='login' method='POST'>
+        <div class="col s12 m8">
+            <div class="row">
+                <p> user name </p>
+                <input name="username" type="text">
+            </div>
+
+            <div class="row">
+                <p> password </p>
+                <input name="password" type="password">
+            </div>
+
+            <div class="row">
+                <button class="waves-effect btn red lighten-2">login</button>
+            </div> 
+    </form>
+{% endblock %}

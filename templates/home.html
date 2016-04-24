@@ -9,21 +9,40 @@
     <nav>
         <div class="nav-wrapper red lighten-2">
             <div class="container">
+
+                <!-- add new remote -->
                 <ul id="nav-mobile" class="left hide-on-med-and-down">
                     <li>
                         <a data-activates='new_remote_type'
-                            class="dropdown-button white-text waves-effect btn-flat">
+                            class="dropdown-button white-text waves-effect">
                             add new remote
                         </a>
                     </li>
                 </ul>
+
+                <!-- logo -->
+                <a href="/" class="brand-logo center">home automation</a>
+
+                <!-- logout -->
+                <ul id="logout" class="right">
+                    <li>
+                        <a href="/logout" class="right"> logout </a>
+                    </li>
+                </ul>
             </div>
-            <a href="/" class="brand-logo center">Home Automation</a>
         </div>
     </nav>
 {% endblock %}
 
 {% block body %}
+    {% with error = get_flashed_messages() %}
+        {% if error %}
+            {% for e in error %}
+            <p class="error red-text"> {{e}} </p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     {% if remotes|length == 0 %} <!-- No remote message -->
         <div class="row">
             <h5 class="center"> you have no remotes </h5>

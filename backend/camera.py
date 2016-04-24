@@ -7,15 +7,17 @@ import sys
 directory = "/home/pi/raspberry-automation/static/photos"
 max_album_size = 20
 
-if not os.path.isdir(directory):
-    subprocess.call(["mkdir", directory])
 
-try:
-    subprocess.check_output(["which", "fswebcam"])
-except subprocess.CalledProcessError:
-    print("Error, fswebcam not installed")
-    print("Exiting program")
-    sys.exit(1)
+if __debug__:
+    if not os.path.isdir(directory):
+        subprocess.call(["mkdir", directory])
+
+    try:
+        subprocess.check_output(["which", "fswebcam"])
+    except subprocess.CalledProcessError:
+        print("Error, fswebcam not installed")
+        print("Exiting program")
+        sys.exit(1)
 
 
 def take_photo():
