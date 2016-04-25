@@ -4,7 +4,7 @@ import os
 from os import listdir
 import sys
 
-directory = "/home/pi/raspberry-automation/static/photos"
+directory = "../static/photos"
 max_album_size = 20
 
 if __debug__:
