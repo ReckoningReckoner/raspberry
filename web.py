@@ -150,19 +150,21 @@ def edit(pin):
                            remote=data)
 
 
+# the side by side shit
+r = Remote()
+r_thread = Thread(target=r.run)
+r_thread.daemon = True
+r_thread.start()
+
+app.config["SECRET_KEY"] = "I love gloria <3"
+
+try:
+    data = open("stuff").readline().strip()
+    bytes_ = base64.b64decode(data)
+    users = ast.literal_eval(bytes_.decode("utf-8"))
+except IOError:
+    print("Error while loading")
+
 if __name__ == "__main__":
-    r = Remote()
-    r_thread = Thread(target=r.run)
-    r_thread.daemon = True
-    r_thread.start()
-
-    app.config["SECRET_KEY"] = "I love gloria <3"
-
-    try:
-        data = open("stuff").readline().strip()
-        bytes_ = base64.b64decode(data)
-        users = ast.literal_eval(bytes_.decode("utf-8"))
-    except IOError:
-        print("Error while loading")
 
     app.run(debug=True, host='0.0.0.0', use_reloader=False)
