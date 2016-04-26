@@ -9,6 +9,7 @@ from wtforms import validators
 import time
 import re
 from backend.camera import take_photo, get_newest_photo  # hard coded webcam
+from backend.emailer import send_email
 
 if __debug__:  # if not editing from the raspberry pi
     import gpiozero as gpio
@@ -226,6 +227,8 @@ class AlarmSystem(RemoteInterface):
                 self.buzzer = SimpleOutput({"pin": dic["pin_buzzer"]})
                 self.motion = MotionSensor({"pin": dic["pin_motion"]})
                 self.last_picture_taken = int(time.time())
+                self.last_email_sent = None
+                self.emails = dic["emails"]
             except gpio.GPIOZeroError as e:
                 raise ValueError(str(e))
             except Exception as e:
@@ -242,6 +245,8 @@ class AlarmSystem(RemoteInterface):
             self.buzzer.input({"pin": data["pin_buzzer"]})
             self.motion.input({"pin": data["pin_motion"]})
 
+            self.emals = data["emails"]
+
             self.keep_on = data["keep_on"]
             self.door_open = not self.switch.is_active()
             self.motion_detected = self.motion.is_active()
@@ -250,9 +255,15 @@ class AlarmSystem(RemoteInterface):
                 take_photo()
                 self.photo_toggle = data["photo_toggle"]
 
-            # Door is closed with switch is closed
-            if self.keep_on and self.door_open:
+            if self.keep_on and self.door_open:  # Door is open when not home
                 self.buzzer.on()
+
+                # send email every hour if door is open
+                if self.last_email_sent is None or \
+                   int(time.time()) - self.last_email_sent > 1 * 3600:
+
+                    send_email(self.emails.replace(" ", "").split(","))
+
                 # take photo every three seconds if door is open
                 if int(time.time()) - self.last_picture_taken > 3:
                     take_photo()
