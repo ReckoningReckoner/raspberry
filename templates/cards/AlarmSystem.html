@@ -2,7 +2,7 @@
 {% extends 'cards/base_card.html' %}
 {% block image %}
 <div class="card-image waves-effect waves-block waves-light">
-    <img src="{{url_for('static', filename=remote["photo"])}}" alt="Image preview...">
+    <img class="activator" src="{{url_for('static', filename=remote["photo"])}}" alt="Image preview...">
 </div>
 
 {% endblock %}
@@ -46,7 +46,7 @@
 
 {% block button %}
     <button class="waves-effect btn-flat"
-            value={{remote['pin']}} name=toggle>toggle away from home</button>
+            value={{remote['pin']}} name=toggle>toggle alarm</button>
 
     <button class="waves-effect btn-flat"
             value={{remote['pin']}} name=photo_toggle>take photo</button>

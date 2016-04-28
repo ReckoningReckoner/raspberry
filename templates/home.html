@@ -10,23 +10,38 @@
         <div class="nav-wrapper red lighten-2">
             <div class="container">
 
-                <!-- add new remote -->
-                <ul id="nav-mobile" class="left hide-on-med-and-down">
-                    <li>
-                        <a data-activates='new_remote_type'
-                            class="dropdown-button white-text waves-effect">
-                            add new remote
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- logo -->
                 <a href="/" class="brand-logo center">home automation</a>
+                
+                <a href="#" data-activates="sidebar" class="button-collapse">
+                    <i class="material-icons">menu</i>
+                </a>
+
+                <!-- add new remote -->
+                <div class="new remote">
+                    <ul id="nav-mobile" class="left hide-on-med-and-down">
+                        <li>
+                            <a data-activates='new_remote_type'
+                                class="dropdown-button waves-effect">
+                                add new remote
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
                 <!-- logout -->
-                <ul id="logout" class="right">
+                <div class="logout">
+                    <ul id="nav-mobile" class="right hide-on-med-and-down">
+                        <li> <a href="/logout"> logout </a> </li>
+                    </ul>
+                </div>
+
+                <ul class="side-nav" id="sidebar">
+                    <li><a href="/logout"> logout </a></li>
                     <li>
-                        <a href="/logout" class="right"> logout </a>
+                        <a data-activates='new_remote_type'
+                            class="dropdown-button waves-effect">
+                            add new remote
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -71,4 +86,10 @@
             {% endfor %}
         </ul>
     </div>
+{% endblock %}
+
+{% block script %}
+<script>
+    $(".button-collapse").sideNav();
+</script>
 {% endblock %}
