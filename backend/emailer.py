@@ -1,4 +1,5 @@
 import smtplib
+from email.mime.text import MIMEText
 import os
 from getpass import getpass
 
@@ -62,6 +63,8 @@ def create_and_import():
     print("created secrets.py file, trying to import again")
     import_secrets()
 
+
+# Get email credentials
 try:
     import_secrets()
 except ImportError:
@@ -70,12 +73,23 @@ except ImportError:
 
 
 def send_email(addresses):
-    msg = "The house door has been opened!\n www.metcalfeautomate.tk"
+    msg_body = \
+            """
+            <p>The house door has been opened!</p>
+            <p>
+                <a href='http://www.metcalfeautomate.tk'>
+                    Go to home automation
+                </a>
+            </p>
+            """
+    msg = MIMEText(msg_body, "html")
+    msg["Subject"] = "The house door has been opened!"
+
     try:
         s = smtplib.SMTP("smtp.gmail.com:587")
         s.starttls()
         s.login(username, password)
-        s.sendmail(username, addresses, msg)
+        s.sendmail(username, addresses, msg.as_string())
         print("sent an email to", addresses)
         s.quit()
     except smtplib.SMTPAuthenticationError:
