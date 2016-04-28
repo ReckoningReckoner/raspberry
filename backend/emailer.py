@@ -70,7 +70,7 @@ except ImportError:
 
 
 def send_email(addresses):
-    msg = "The house door has been opened!"
+    msg = "The house door has been opened!\n www.metcalfeautomate.tk"
     try:
         s = smtplib.SMTP("smtp.gmail.com:587")
         s.starttls()

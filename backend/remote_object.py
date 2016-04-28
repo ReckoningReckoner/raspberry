@@ -271,6 +271,11 @@ class AlarmSystem(RemoteInterface):
         self.last_email_sent = int(time.time())
 
     def passive_mode(self):
+        # This is so that if home mode is enabled, then disabled, then
+        # enabled again in a short timeframe, and email will still be sent.
+        if self.last_email_sent is not None:
+            self.last_email_sent = None
+
         self.buzzer.off()
 
     def input(self, data):
