@@ -28,6 +28,7 @@ class Remote():
             self._add_locally(remote)
 
         print("created remotes")
+        self.time_from_debug = int(time())
 
     # runs in parallel with the flask server, for physically
     # displaying the lights
@@ -48,11 +49,13 @@ class Remote():
     # Debug output
     def _show_debug_output(self):
         current_time = int(time())
-        debug = current_time % 5 == 0
+        debug = current_time - self.time_from_debug >= 5
         if debug:
-            print("Time is: ", current_time, "\n")
+            print("")
+            print("Time is: ", current_time)
             print("size of db:", len(self.db))
             print("size of remotes:", len(self.remotes))
+            self.time_from_debug = current_time
 
         return debug
 
