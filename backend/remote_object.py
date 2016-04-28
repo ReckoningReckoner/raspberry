@@ -9,6 +9,7 @@ from wtforms import validators
 import time
 import re
 from backend.camera import take_photo, get_newest_photo  # hard coded webcam
+from backend.emailer import send_email
 
 if __debug__:  # if not editing from the raspberry pi
     import gpiozero as gpio
@@ -225,16 +226,57 @@ class AlarmSystem(RemoteInterface):
                 self.switch = Switch({"pin": dic["pin"]})
                 self.buzzer = SimpleOutput({"pin": dic["pin_buzzer"]})
                 self.motion = MotionSensor({"pin": dic["pin_motion"]})
-                self.last_picture_taken = int(time.time())
+                self.emails = dic["emails"]
             except gpio.GPIOZeroError as e:
                 raise ValueError(str(e))
             except Exception as e:
                 raise e
 
         self.keep_on = dic["keep_on"]
+        self.photo_toggle = dic["photo_toggle"]
+
         self.motion_detected = False
         self.door_open = False
-        self.photo_toggle = dic["photo_toggle"]
+
+        self.EMAIL_MAX_TIME = 3600  # 1 hour
+        self.last_email_sent = None
+
+        self.PHOTO_MAX_TIME = 3  # 3 seconds
+        self.last_picture_taken = None
+
+    # For when the door is open but the alarm system is deactivated
+    def alert_mode(self):
+        self.buzzer.on()
+
+        # send email every hour if door is open
+        if self.last_email_sent is None or \
+            int(time.time()) - self.last_email_sent > \
+                self.EMAIL_MAX_TIME:
+
+            self.send_email()
+
+        # take photo every three seconds if door is open
+        if self.last_picture_taken is None or \
+            int(time.time()) - self.last_picture_taken > \
+                self.PHOTO_MAX_TIME:
+
+            self.take_photo()
+
+    def take_photo(self):
+        take_photo()
+        self.last_picture_taken = int(time.time())
+
+    def send_email(self):
+        send_email(self.emails.replace(" ", "").split(","))
+        self.last_email_sent = int(time.time())
+
+    def passive_mode(self):
+        # This is so that if home mode is enabled, then disabled, then
+        # enabled again in a short timeframe, and email will still be sent.
+        if self.last_email_sent is not None:
+            self.last_email_sent = None
+
+        self.buzzer.off()
 
     def input(self, data):
         if __debug__:
@@ -242,31 +284,29 @@ class AlarmSystem(RemoteInterface):
             self.buzzer.input({"pin": data["pin_buzzer"]})
             self.motion.input({"pin": data["pin_motion"]})
 
+            self.emails = data["emails"]
+
             self.keep_on = data["keep_on"]
             self.door_open = not self.switch.is_active()
             self.motion_detected = self.motion.is_active()
 
             if data["photo_toggle"] != self.photo_toggle:
-                take_photo()
+                self.take_photo()
                 self.photo_toggle = data["photo_toggle"]
 
-            # Door is closed with switch is closed
-            if self.keep_on and self.door_open:
-                self.buzzer.on()
-                # take photo every three seconds if door is open
-                if int(time.time()) - self.last_picture_taken > 3:
-                    take_photo()
-                    self.last_picture_taken = int(time.time())
+            if self.keep_on and self.door_open:  # Door is open when not home
+                self.alert_mode()
             else:
-                self.buzzer.off()
+                self.passive_mode()
 
     def output(self, database, query):
         if __debug__:
             dic = {}
             dic["door_open"] = self.door_open
+
             if self.motion_detected:
                 dic["motion"] = time.strftime("%c")
-                take_photo()
+                self.take_photo()
 
             dic["photo"] = get_newest_photo()
             database.update(dic, query["pin"] == self.pin)
@@ -285,8 +325,8 @@ class AlarmSystem(RemoteInterface):
         v_n = RemoteAbstract.Form.num_validator
 
         pin = MinMaxIntegerField(label="gpio pin for Switch",
-                                       min=MIN_GPIO, max=MAX_GPIO,
-                                       validators=[v_b, v_n])
+                                 min=MIN_GPIO, max=MAX_GPIO,
+                                 validators=[v_b, v_n])
 
         pin_buzzer = MinMaxIntegerField(label="gpio pin for Buzzer",
                                         min=MIN_GPIO, max=MAX_GPIO,
