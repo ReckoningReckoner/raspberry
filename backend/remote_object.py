@@ -63,10 +63,9 @@ class RemoteInterface():
 
 
 class RemoteAbstract(RemoteInterface):
-    def __init__(self, dic, Type=None, no_type=False):
+    def __init__(self, dic, Type=None):
         self.pin = dic["pin"]
-        self.no_type = no_type
-        if __debug__ and not no_type:
+        if __debug__:
             if Type is None:
                 Type = GPIODevice
             try:
