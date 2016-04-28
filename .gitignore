@@ -3,6 +3,8 @@
 *.json
 *.jpg
 *.jpeg
+secrets.py
+
 
 # Packages #
 ############

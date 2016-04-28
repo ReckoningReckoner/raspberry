@@ -59,7 +59,6 @@ def index():
                            remotes=r.to_dict(),
                            valid_types=r.valid_types)
 
-
 # ======= For adding remotes to the database and editing them ======
 
 
