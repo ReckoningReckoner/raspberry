@@ -4,6 +4,7 @@
 *.jpg
 *.jpeg
 secrets.py
+.gd
 
 
 # Packages #
