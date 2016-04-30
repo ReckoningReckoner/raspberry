@@ -19,6 +19,10 @@ if __debug__:
         sys.exit(1)
 
 
+def sync_photo():
+    subprocess.call(["sh", directory + "/" + "syncphoto.sh", directory])
+
+
 def take_photo():
     filename = str(int(time.time()))
     files = sorted(listdir(directory))
@@ -28,6 +32,7 @@ def take_photo():
 
     subprocess.call(["fswebcam", "-r 720x480",
                      directory + "/" + filename + ".jpg"])
+    sync_photo()
 
 
 def get_newest_photo():
@@ -38,4 +43,4 @@ def get_newest_photo():
     return "photos/" + file_names[-1]
 
 if __name__ == "__main__":
-    take_photo()
+    sync_photo()
