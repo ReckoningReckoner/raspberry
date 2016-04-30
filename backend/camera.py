@@ -20,7 +20,8 @@ if __debug__:
 
 
 def sync_photo():
-    subprocess.call(["sh", directory + "/" + "syncphoto.sh", directory])
+    sync_directory = "backend"
+    subprocess.call(["sh", sync_directory + "/" + "syncphoto.sh", directory])
 
 
 def get_sorted_photos():
