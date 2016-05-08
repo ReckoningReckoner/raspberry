@@ -4,8 +4,9 @@ import os
 from threading import Thread
 
 
-directory = "static/photos"
-max_album_size = 200
+directory_without_static = "photos/photos"
+directory = "static/" + directory_without_static
+max_album_size = 20
 
 if __debug__:
     if not os.path.isdir(directory):
@@ -21,6 +22,7 @@ if __debug__:
 
 def sync_photo():
     sync_directory = "backend"
+    print("trying to sync")
     subprocess.call(["sh", sync_directory + "/" + "syncphoto.sh", directory])
 
 
@@ -46,9 +48,7 @@ def photograph_and_sync():
 
 
 def take_photo():
-    # Threading this
-    photo_t = Thread(target=photograph_and_sync)
-    photo_t.start()
+    photograph_and_sync()
 
 
 def get_newest_photo():
@@ -56,7 +56,7 @@ def get_newest_photo():
     if len(file_names) == 0:
         return ""
 
-    return "photos/" + file_names[-1]
+    return directory_without_static + "/" + file_names[-1]
 
 if __name__ == "__main__":
     take_photo()

@@ -158,7 +158,7 @@ r_thread.start()
 app.config["SECRET_KEY"] = "I love gloria <3"
 
 try:
-    data = open("stuff").readline().strip()
+    data = open("backend/loaduser").readline().strip()
     bytes_ = base64.b64decode(data)
     users = ast.literal_eval(bytes_.decode("utf-8"))
 except IOError:

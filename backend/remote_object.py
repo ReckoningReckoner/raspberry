@@ -363,7 +363,7 @@ class AlarmSystem(RemoteInterface):
         dic["door_open"] = None
         dic["motion"] = None
         dic["photo_toggle"] = False
-        dic["photo"] = ""
+        dic["photo"] = get_newest_photo()
 
         dic["emails"] = form.emails.data.replace(" ", "")
 
