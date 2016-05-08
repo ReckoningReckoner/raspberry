@@ -2,7 +2,7 @@ import imp
 import subprocess
 
 try:
-    modules = open("dependencies.txt")
+    modules = open("dependencies")
 except FileNotFoundError:
     print("Cannot find dependencies.txt, try another git pull")
 

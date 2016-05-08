@@ -6,7 +6,7 @@ from threading import Thread
 
 directory_without_static = "photos/photos"
 directory = "static/" + directory_without_static
-max_album_size = 20
+max_album_size = 50
 
 if __debug__:
     if not os.path.isdir(directory):
@@ -18,13 +18,6 @@ if __debug__:
         print("Error, fswebcam not installed")
         print("Exiting program")
         sys.exit(1)
-
-
-# Deprecated
-# def sync_photo():
-#     sync_directory = "backend"
-#     print("trying to sync")
-#     subprocess.call(["sh", sync_directory + "/" + "syncphoto.sh", directory])
 
 
 def get_sorted_photos():
