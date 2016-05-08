@@ -20,10 +20,11 @@ if __debug__:
         sys.exit(1)
 
 
-def sync_photo():
-    sync_directory = "backend"
-    print("trying to sync")
-    subprocess.call(["sh", sync_directory + "/" + "syncphoto.sh", directory])
+# Deprecated
+# def sync_photo():
+#     sync_directory = "backend"
+#     print("trying to sync")
+#     subprocess.call(["sh", sync_directory + "/" + "syncphoto.sh", directory])
 
 
 def get_sorted_photos():
@@ -35,7 +36,7 @@ def get_sorted_photos():
     return photos
 
 
-def photograph_and_sync():
+def photograph():
     filename = str(int(time.time()))
     files = get_sorted_photos()
     if len(files) > max_album_size:
@@ -44,11 +45,10 @@ def photograph_and_sync():
 
     subprocess.call(["fswebcam", "-r 640x480",
                      directory + "/" + filename + ".jpg"])
-    sync_photo()
 
 
 def take_photo():
-    photograph_and_sync()
+    photograph()
 
 
 def get_newest_photo():
