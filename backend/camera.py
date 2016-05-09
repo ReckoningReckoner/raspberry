@@ -6,7 +6,7 @@ from threading import Thread
 
 directory_without_static = "photos/photos"
 directory = "static/" + directory_without_static
-max_album_size = 50
+max_album_size = 100
 
 if __debug__:
     if not os.path.isdir(directory):
